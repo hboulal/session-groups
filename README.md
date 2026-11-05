@@ -4,6 +4,10 @@ Your coding-agent sessions, in your own groups, one click from being resumed.
 
 Session Groups is a VS Code side panel for terminal coding agents such as Claude Code, OpenCode, GitHub Copilot CLI, Gemini CLI, Qwen Code and Goose. Each session runs in a real VS Code terminal. Sessions stay listed after VS Code restarts, and a click resumes one where you left it.
 
+![The Session Groups panel: groups with running, working and finished sessions, and the Archived view](docs/screenshots/panel.png)
+
+![Search Sessions, grouped by group](docs/screenshots/search.png)
+
 ## Features
 
 - **Your own groups.** A group has a name, a colour, the folder its sessions start in, the shell its terminals use and the agent its "+" starts. Sessions without a group are listed under **Ungrouped**.

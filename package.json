@@ -611,7 +611,8 @@
     "build": "node esbuild.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "package": "npm run build && vsce package --no-dependencies"
+    "package": "npm run build && vsce package --no-dependencies --readme-path MARKETPLACE.md",
+    "publish": "npm run build && vsce publish --no-dependencies --readme-path MARKETPLACE.md"
   },
   "devDependencies": {
     "@types/node": "22.20.5",

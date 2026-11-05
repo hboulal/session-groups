@@ -35,6 +35,8 @@ describe('lastTurn', () => {
     expect(lastTurn([user('hi'), assistant('tool_use'), user([{ type: 'text', text: '[Request interrupted by user]' }])].join('\n'))).toBe('done');
     expect(lastTurn([assistant('end_turn'), assistant('tool_use', { isSidechain: true }), user('x', { isMeta: true })].join('\n'))).toBe('done');
     expect(lastTurn('{"type":"custom-title","customTitle":"t"}')).toBeUndefined();
+    expect(lastTurn([assistant('end_turn'), user('This session is being continued', { isCompactSummary: true, isVisibleInTranscriptOnly: true })].join('\n'))).toBe('done');
+    expect(lastTurn([user('summary', { isCompactSummary: true }), assistant('tool_use')].join('\n'))).toBe('working');
   });
 });
 

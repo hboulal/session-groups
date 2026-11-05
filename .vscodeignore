@@ -10,3 +10,4 @@ vitest.setup.mts
 **/*.map
 .claude/**
 AGENTS.md
+README.md

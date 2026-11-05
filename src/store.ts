@@ -42,7 +42,6 @@ export class Store {
       : undefined);
   }
 
-  // Removes the group and its sessions, and returns them; its archived sessions stay in the Archived view, without a group.
   // Removes the group; its sessions, archived ones included, become ungrouped, or are removed too and returned.
   deleteGroup(id: string, withSessions: boolean): Promise<Session[]> {
     return this.write(s => {
