@@ -378,12 +378,12 @@
         },
         {
           "command": "sessionGroups.enableReorder",
-          "when": "view == sessionGroups.groups && !sessionGroups.reorder",
+          "when": "view == sessionGroups.groups && !sessionGroups.flat && !sessionGroups.reorder",
           "group": "2_view@2"
         },
         {
           "command": "sessionGroups.disableReorder",
-          "when": "view == sessionGroups.groups && sessionGroups.reorder",
+          "when": "view == sessionGroups.groups && !sessionGroups.flat && sessionGroups.reorder",
           "group": "2_view@2"
         },
         {

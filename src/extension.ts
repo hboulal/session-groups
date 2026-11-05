@@ -182,12 +182,17 @@ export function activate(context: vscode.ExtensionContext): void {
   setActiveOnly(false);
 
   const FLAT_KEY = 'sessionGroups.flat';
+  const REORDER_KEY = 'sessionGroups.reorder';
+  const isFlat = (): boolean => context.globalState.get<boolean>(FLAT_KEY, false);
+  const isReorder = (): boolean => context.globalState.get<boolean>(REORDER_KEY, false);
   const setFlat = async (on: boolean): Promise<void> => {
     tree.setFlat(on);
     void vscode.commands.executeCommand('setContext', FLAT_KEY, on);
     await context.globalState.update(FLAT_KEY, on);
+    buildTreeView();
   };
-  void setFlat(context.globalState.get<boolean>(FLAT_KEY, false));
+  tree.setFlat(isFlat());
+  void vscode.commands.executeCommand('setContext', FLAT_KEY, isFlat());
 
   const COLORS_KEY = 'sessionGroups.colors';
   const setColors = async (on: boolean): Promise<void> => {
@@ -198,7 +203,6 @@ export function activate(context: vscode.ExtensionContext): void {
   };
   void setColors(context.globalState.get<boolean>(COLORS_KEY, true));
 
-  const REORDER_KEY = 'sessionGroups.reorder';
   const dragAndDrop = new GroupsDragAndDrop(store, showError);
   let treeView: vscode.TreeView<unknown> | undefined;
   let treeViewSubscription: vscode.Disposable | undefined;
@@ -211,8 +215,10 @@ export function activate(context: vscode.ExtensionContext): void {
     treeView.badge = n > 0 ? { value: n, tooltip: `${n} active sessions` } : undefined;
   };
 
-  // The one place that builds the view: drag and drop is attached only while reordering is on.
-  const buildTreeView = (reorder: boolean): void => {
+  // The one place that builds the view: drag and drop is attached only while reordering is on and groups are shown,
+  // since without group rows a drop would still move sessions between the hidden groups.
+  function buildTreeView(): void {
+    const reorder = isReorder() && !isFlat();
     treeViewSubscription?.dispose();
     treeView?.dispose();
     treeView = vscode.window.createTreeView('sessionGroups.groups', {
@@ -222,16 +228,15 @@ export function activate(context: vscode.ExtensionContext): void {
     });
     treeViewSubscription = tree.onDidChangeTreeData(updateCount);
     updateCount();
-  };
+  }
 
   const setReorder = async (on: boolean): Promise<void> => {
     await context.globalState.update(REORDER_KEY, on);
     void vscode.commands.executeCommand('setContext', REORDER_KEY, on);
-    buildTreeView(on);
+    buildTreeView();
   };
-  const reorder = context.globalState.get<boolean>(REORDER_KEY, false);
-  void vscode.commands.executeCommand('setContext', REORDER_KEY, reorder);
-  buildTreeView(reorder);
+  void vscode.commands.executeCommand('setContext', REORDER_KEY, isReorder());
+  buildTreeView();
 
   context.subscriptions.push(
     archivedTree,
