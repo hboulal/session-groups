@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import type { Agent, Group, Session } from './model';
 import type { State, Store } from './store';
 import type { Terminals } from './terminals';
-import { archivedChildren, archivedOf, archivedRoot, flatChildren, flatLabel, groupChildren, groupColor, groupDescription, groupedRoot, sessionDescription, ungroupedChildren, type IsActive, type UngroupedNode } from './view';
+import { archivedChildren, archivedOf, archivedRoot, flatChildren, flatLabel, groupChildren, groupColor, groupDescription, groupedRoot, sessionDescription, UNGROUPED, ungroupedChildren, type IsActive, type UngroupedNode } from './view';
 
 type TreeNode = Group | Session | UngroupedNode;
 
@@ -47,6 +47,12 @@ export class GroupsTree implements vscode.TreeDataProvider<TreeNode>, vscode.Dis
     if (isUngroupedNode(element)) { return ungroupedChildren(state, this.filter()); }
     if (isSession(element)) { return []; }
     return groupChildren(state, element.id, this.filter());
+  }
+
+  // Lets the view reveal a session: its parent is its group, or Ungrouped; in the flat view sessions are roots.
+  getParent(element: TreeNode): TreeNode | undefined {
+    if (!isSession(element) || this.flat) { return undefined; }
+    return element.groupId === '' ? UNGROUPED : this.store.read().groups.find(g => g.id === element.groupId);
   }
 
   getTreeItem(element: TreeNode): vscode.TreeItem {

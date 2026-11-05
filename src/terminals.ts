@@ -40,6 +40,11 @@ export class Terminals implements vscode.Disposable {
     return this.bySession.get(sessionId);
   }
 
+  sessionOf(terminal: vscode.Terminal): string | undefined {
+    for (const [id, t] of this.bySession) { if (t === terminal) { return id; } }
+    return undefined;
+  }
+
   open(session: Session, agent: Agent, kind: 'start' | 'resume'): void {
     const existing = this.bySession.get(session.id);
     if (existing) { existing.show(); return; }

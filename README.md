@@ -16,6 +16,7 @@ Session Groups is a VS Code side panel for terminal coding agents such as Claude
   - it spins while the agent works;
   - it is green when it is your turn;
   - it gets a yellow dot when the agent finished while you were looking elsewhere, with a notification that offers to open it.
+- **Follows your terminals.** Picking a session's terminal selects its row in the panel.
 - **Counts at a glance.** Each group shows how many sessions it has and how many are running (`5 · 2 active`). The view title and the activity-bar badge show the total running.
 - **Names follow the agent.** Terminal tabs show the title Claude Code sets, and `/rename` inside Claude also renames the session in the panel.
 - **Archive.** Archived sessions move to their own view and cannot be opened until they are unarchived. Clear Archived removes them all from the list.

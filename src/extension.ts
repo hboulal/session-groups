@@ -239,6 +239,12 @@ export function activate(context: vscode.ExtensionContext): void {
     tree,
     { dispose: () => { clearInterval(titleTimer); } },
     vscode.window.onDidChangeActiveTerminal(clearSeen),
+    // Picking a session's terminal selects its row, but only while the panel is visible: revealing would open it.
+    vscode.window.onDidChangeActiveTerminal(terminal => {
+      const id = terminal && terminals.sessionOf(terminal);
+      const session = id ? store.read().sessions.find(s => s.id === id && s.archived !== true) : undefined;
+      if (session && treeView?.visible) { void treeView.reveal(session, { select: true, focus: false }); }
+    }),
     vscode.window.onDidChangeWindowState(clearSeen),
     terminals.onDidChange(clearSeen),
     { dispose: () => { treeViewSubscription?.dispose(); treeView?.dispose(); } },
