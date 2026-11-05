@@ -1,0 +1,48 @@
+# Every push to main that changes the extension itself is checked, gets the next patch version, and is published to the
+# VS Code Marketplace through Trusted Publishing (no stored token). The version bump is committed back with [skip ci].
+name: Publish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'media/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'esbuild.mjs'
+      - 'MARKETPLACE.md'
+  workflow_dispatch:
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: Next patch version
+        id: version
+        run: echo "version=$(npm version patch --no-git-tag-version | tr -d v)" >> "$GITHUB_OUTPUT"
+      - run: npm run build
+      - name: Publish to the Marketplace
+        run: npx vsce publish --no-dependencies --readme-path MARKETPLACE.md --oidc
+      - name: Commit the version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Release ${{ steps.version.outputs.version }} [skip ci]"
+          git tag "v${{ steps.version.outputs.version }}"
+          git push origin HEAD:main --tags

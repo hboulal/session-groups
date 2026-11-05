@@ -89,6 +89,8 @@ npm run typecheck && npm test && npm run build
 npm run package   # builds session-groups-<version>.vsix
 ```
 
+Every push to `main` that changes the extension (code, media, `package.json` or `MARKETPLACE.md`) is checked, gets the next patch version and is published to the Marketplace by the `Publish` workflow; the version bump is committed back as `Release x.y.z` with a `vx.y.z` tag. Changes to the docs only are not published.
+
 ## License
 
 MIT

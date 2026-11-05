@@ -8,6 +8,7 @@ A VS Code extension: a side panel of the user's own groups of coding-agent sessi
 - **Platform facts are verified, not recalled.** Check VS Code API claims against `@types/vscode` (the version in `package.json`). Check agent CLI flags against the tool's `--help` or documentation. A claim that cannot be checked is labelled "to verify" in the design doc.
 - **Pure logic is tested.** Tree shapes, labels, ordering and transcript parsing live in modules without a `vscode` import (`view.ts`, `model.ts`, `title.ts`, `opencode.ts`, `order.ts`, `reattach.ts`, `launch.ts`), each with a vitest file next to it.
 - **Checks before done:** `npm run typecheck && npm test && npm run build`.
+- **Releases are automatic.** A push to `main` touching `src/`, `media/`, `package.json`, `package-lock.json`, `esbuild.mjs` or `MARKETPLACE.md` publishes the next patch version (`.github/workflows/publish.yml`); never bump `version` by hand for a patch, and pull before pushing since the workflow commits the bump back.
 - **English everywhere.** Each markdown paragraph is a single line.
 
 ## Commands
