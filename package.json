@@ -159,18 +159,6 @@
         "icon": "$(clear-all)"
       },
       {
-        "command": "sessionGroups.enableReorder",
-        "title": "Enable Reorder",
-        "category": "Session Groups",
-        "icon": "$(grabber)"
-      },
-      {
-        "command": "sessionGroups.disableReorder",
-        "title": "Disable Reorder",
-        "category": "Session Groups",
-        "icon": "$(lock)"
-      },
-      {
         "command": "sessionGroups.showFlat",
         "title": "Show Sessions Without Groups",
         "category": "Session Groups",
@@ -262,14 +250,6 @@
         },
         {
           "command": "sessionGroups.showAllSessions",
-          "when": "false"
-        },
-        {
-          "command": "sessionGroups.enableReorder",
-          "when": "false"
-        },
-        {
-          "command": "sessionGroups.disableReorder",
           "when": "false"
         },
         {
@@ -375,16 +355,6 @@
           "command": "sessionGroups.showGroups",
           "when": "view == sessionGroups.groups && sessionGroups.flat",
           "group": "navigation@3"
-        },
-        {
-          "command": "sessionGroups.enableReorder",
-          "when": "view == sessionGroups.groups && !sessionGroups.flat && !sessionGroups.reorder",
-          "group": "2_view@2"
-        },
-        {
-          "command": "sessionGroups.disableReorder",
-          "when": "view == sessionGroups.groups && !sessionGroups.flat && sessionGroups.reorder",
-          "group": "2_view@2"
         },
         {
           "command": "sessionGroups.hideColors",

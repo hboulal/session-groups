@@ -182,9 +182,7 @@ export function activate(context: vscode.ExtensionContext): void {
   setActiveOnly(false);
 
   const FLAT_KEY = 'sessionGroups.flat';
-  const REORDER_KEY = 'sessionGroups.reorder';
   const isFlat = (): boolean => context.globalState.get<boolean>(FLAT_KEY, false);
-  const isReorder = (): boolean => context.globalState.get<boolean>(REORDER_KEY, false);
   const setFlat = async (on: boolean): Promise<void> => {
     tree.setFlat(on);
     void vscode.commands.executeCommand('setContext', FLAT_KEY, on);
@@ -215,27 +213,20 @@ export function activate(context: vscode.ExtensionContext): void {
     treeView.badge = n > 0 ? { value: n, tooltip: `${n} active sessions` } : undefined;
   };
 
-  // The one place that builds the view: drag and drop is attached only while reordering is on and groups are shown,
+  // The one place that builds the view: drag and drop is attached only while groups are shown,
   // since without group rows a drop would still move sessions between the hidden groups.
   function buildTreeView(): void {
-    const reorder = isReorder() && !isFlat();
     treeViewSubscription?.dispose();
     treeView?.dispose();
     treeView = vscode.window.createTreeView('sessionGroups.groups', {
       treeDataProvider: tree,
       canSelectMany: false,
-      ...(reorder ? { dragAndDropController: dragAndDrop } : {}),
+      ...(isFlat() ? {} : { dragAndDropController: dragAndDrop }),
     });
     treeViewSubscription = tree.onDidChangeTreeData(updateCount);
     updateCount();
   }
 
-  const setReorder = async (on: boolean): Promise<void> => {
-    await context.globalState.update(REORDER_KEY, on);
-    void vscode.commands.executeCommand('setContext', REORDER_KEY, on);
-    buildTreeView();
-  };
-  void vscode.commands.executeCommand('setContext', REORDER_KEY, isReorder());
   buildTreeView();
 
   context.subscriptions.push(
@@ -256,10 +247,6 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.window.onDidChangeWindowState(clearSeen),
     terminals.onDidChange(clearSeen),
     { dispose: () => { treeViewSubscription?.dispose(); treeView?.dispose(); } },
-
-    register('enableReorder', () => setReorder(true)),
-
-    register('disableReorder', () => setReorder(false)),
 
     register('hideColors', () => setColors(false)),
 
