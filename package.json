@@ -1,0 +1,625 @@
+{
+  "name": "session-groups",
+  "displayName": "Session Groups",
+  "description": "A side panel of your own groups of coding-agent sessions: each session runs in a terminal and resumes after VS Code restarts.",
+  "version": "0.1.0",
+  "publisher": "hboulal",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hboulal/session-groups.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hboulal/session-groups/issues"
+  },
+  "homepage": "https://github.com/hboulal/session-groups#readme",
+  "engines": {
+    "vscode": "^1.97.0"
+  },
+  "categories": [
+    "AI",
+    "Other"
+  ],
+  "keywords": [
+    "claude",
+    "claude code",
+    "opencode",
+    "copilot",
+    "gemini",
+    "agent",
+    "sessions",
+    "terminal",
+    "ai"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "sessionGroups",
+          "title": "Session Groups",
+          "icon": "media/activity.svg"
+        }
+      ]
+    },
+    "views": {
+      "sessionGroups": [
+        {
+          "id": "sessionGroups.groups",
+          "name": "Groups"
+        },
+        {
+          "id": "sessionGroups.archived",
+          "name": "Archived"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "sessionGroups.groups",
+        "when": "!sessionGroups.flat",
+        "contents": "No sessions yet. Start one in a folder, or [add a group](command:sessionGroups.addGroup) to keep related sessions together.\n[New Session](command:sessionGroups.newUngroupedSession)"
+      },
+      {
+        "view": "sessionGroups.groups",
+        "when": "sessionGroups.flat && !sessionGroups.activeOnly",
+        "contents": "No sessions to show."
+      },
+      {
+        "view": "sessionGroups.groups",
+        "when": "sessionGroups.flat && sessionGroups.activeOnly",
+        "contents": "No session is running."
+      },
+      {
+        "view": "sessionGroups.archived",
+        "contents": "Archived sessions appear here."
+      }
+    ],
+    "commands": [
+      {
+        "command": "sessionGroups.addGroup",
+        "title": "Add Group",
+        "category": "Session Groups",
+        "icon": "$(new-folder)"
+      },
+      {
+        "command": "sessionGroups.newSession",
+        "title": "New Session",
+        "category": "Session Groups",
+        "icon": "$(add)"
+      },
+      {
+        "command": "sessionGroups.newUngroupedSession",
+        "title": "New Session",
+        "category": "Session Groups",
+        "icon": "$(add)"
+      },
+      {
+        "command": "sessionGroups.openSession",
+        "title": "Open Session",
+        "category": "Session Groups"
+      },
+      {
+        "command": "sessionGroups.closeTerminal",
+        "title": "Close Terminal",
+        "category": "Session Groups"
+      },
+      {
+        "command": "sessionGroups.deleteGroup",
+        "title": "Delete Group",
+        "category": "Session Groups"
+      },
+      {
+        "command": "sessionGroups.deleteGroupAndSessions",
+        "title": "Delete Group and Sessions",
+        "category": "Session Groups"
+      },
+      {
+        "command": "sessionGroups.renameSession",
+        "title": "Rename Session",
+        "category": "Session Groups",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "sessionGroups.deleteSession",
+        "title": "Delete Session",
+        "category": "Session Groups"
+      },
+      {
+        "command": "sessionGroups.archiveSession",
+        "title": "Archive Session",
+        "category": "Session Groups",
+        "icon": "$(archive)"
+      },
+      {
+        "command": "sessionGroups.unarchiveSession",
+        "title": "Unarchive Session",
+        "category": "Session Groups",
+        "icon": "$(inbox)"
+      },
+      {
+        "command": "sessionGroups.search",
+        "title": "Search Sessions",
+        "category": "Session Groups",
+        "icon": "$(search)"
+      },
+      {
+        "command": "sessionGroups.showActiveOnly",
+        "title": "Show Active Sessions Only",
+        "category": "Session Groups",
+        "icon": "$(zap)"
+      },
+      {
+        "command": "sessionGroups.showAllSessions",
+        "title": "Show All Sessions",
+        "category": "Session Groups",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "sessionGroups.enableReorder",
+        "title": "Enable Reorder",
+        "category": "Session Groups",
+        "icon": "$(grabber)"
+      },
+      {
+        "command": "sessionGroups.disableReorder",
+        "title": "Disable Reorder",
+        "category": "Session Groups",
+        "icon": "$(lock)"
+      },
+      {
+        "command": "sessionGroups.showFlat",
+        "title": "Show Sessions Without Groups",
+        "category": "Session Groups",
+        "icon": "$(list-flat)"
+      },
+      {
+        "command": "sessionGroups.showGroups",
+        "title": "Show Groups",
+        "category": "Session Groups",
+        "icon": "$(list-tree)"
+      },
+      {
+        "command": "sessionGroups.newSessionWith",
+        "title": "New Session With…",
+        "category": "Session Groups"
+      },
+      {
+        "command": "sessionGroups.clearArchived",
+        "title": "Clear Archived",
+        "category": "Session Groups",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "sessionGroups.editGroup",
+        "title": "Group Settings",
+        "category": "Session Groups",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "sessionGroups.showArchivedByGroup",
+        "title": "Show Archived by Group",
+        "category": "Session Groups",
+        "icon": "$(list-tree)"
+      },
+      {
+        "command": "sessionGroups.showArchivedFlat",
+        "title": "Show Archived Without Groups",
+        "category": "Session Groups",
+        "icon": "$(list-flat)"
+      },
+      {
+        "command": "sessionGroups.editSessionId",
+        "title": "Edit Session ID",
+        "category": "Session Groups"
+      },
+      {
+        "command": "sessionGroups.addExistingSession",
+        "title": "Add Existing Session…",
+        "category": "Session Groups"
+      },
+      {
+        "command": "sessionGroups.hideColors",
+        "title": "Hide Group Colors",
+        "category": "Session Groups"
+      },
+      {
+        "command": "sessionGroups.showColors",
+        "title": "Show Group Colors",
+        "category": "Session Groups"
+      },
+      {
+        "command": "sessionGroups.renameSelected",
+        "title": "Rename Selected",
+        "category": "Session Groups"
+      },
+      {
+        "command": "sessionGroups.deleteSelected",
+        "title": "Delete Selected",
+        "category": "Session Groups"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "sessionGroups.newSession",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.openSession",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.closeTerminal",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.showActiveOnly",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.showAllSessions",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.enableReorder",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.disableReorder",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.showFlat",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.showGroups",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.showArchivedByGroup",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.showArchivedFlat",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.hideColors",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.showColors",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.deleteGroup",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.renameSession",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.deleteSession",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.archiveSession",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.unarchiveSession",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.clearArchived",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.editGroup",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.editSessionId",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.addExistingSession",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.deleteGroupAndSessions",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.renameSelected",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.deleteSelected",
+          "when": "false"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "sessionGroups.addGroup",
+          "when": "view == sessionGroups.groups",
+          "group": "navigation@0"
+        },
+        {
+          "command": "sessionGroups.search",
+          "when": "view == sessionGroups.groups",
+          "group": "navigation@1"
+        },
+        {
+          "command": "sessionGroups.showActiveOnly",
+          "when": "view == sessionGroups.groups && !sessionGroups.activeOnly",
+          "group": "navigation@2"
+        },
+        {
+          "command": "sessionGroups.showAllSessions",
+          "when": "view == sessionGroups.groups && sessionGroups.activeOnly",
+          "group": "navigation@2"
+        },
+        {
+          "command": "sessionGroups.showFlat",
+          "when": "view == sessionGroups.groups && !sessionGroups.flat",
+          "group": "navigation@3"
+        },
+        {
+          "command": "sessionGroups.showGroups",
+          "when": "view == sessionGroups.groups && sessionGroups.flat",
+          "group": "navigation@3"
+        },
+        {
+          "command": "sessionGroups.enableReorder",
+          "when": "view == sessionGroups.groups && !sessionGroups.reorder",
+          "group": "2_view@2"
+        },
+        {
+          "command": "sessionGroups.disableReorder",
+          "when": "view == sessionGroups.groups && sessionGroups.reorder",
+          "group": "2_view@2"
+        },
+        {
+          "command": "sessionGroups.hideColors",
+          "when": "view == sessionGroups.groups && sessionGroups.colors",
+          "group": "2_view@3"
+        },
+        {
+          "command": "sessionGroups.showColors",
+          "when": "view == sessionGroups.groups && !sessionGroups.colors",
+          "group": "2_view@3"
+        },
+        {
+          "command": "sessionGroups.showArchivedByGroup",
+          "when": "view == sessionGroups.archived && !sessionGroups.archivedByGroup",
+          "group": "navigation@1"
+        },
+        {
+          "command": "sessionGroups.showArchivedFlat",
+          "when": "view == sessionGroups.archived && sessionGroups.archivedByGroup",
+          "group": "navigation@1"
+        },
+        {
+          "command": "sessionGroups.clearArchived",
+          "when": "view == sessionGroups.archived",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "sessionGroups.newSession",
+          "when": "view == sessionGroups.groups && viewItem == group",
+          "group": "inline@1"
+        },
+        {
+          "command": "sessionGroups.editGroup",
+          "when": "view == sessionGroups.groups && viewItem == group",
+          "group": "inline@2"
+        },
+        {
+          "command": "sessionGroups.newSessionWith",
+          "when": "view == sessionGroups.groups && viewItem == group",
+          "group": "0_new"
+        },
+        {
+          "command": "sessionGroups.addExistingSession",
+          "when": "view == sessionGroups.groups && viewItem == group",
+          "group": "0_new@2"
+        },
+        {
+          "command": "sessionGroups.deleteGroup",
+          "when": "view == sessionGroups.groups && viewItem == group",
+          "group": "9_delete@1"
+        },
+        {
+          "command": "sessionGroups.deleteGroupAndSessions",
+          "when": "view == sessionGroups.groups && viewItem == group",
+          "group": "9_delete@2"
+        },
+        {
+          "command": "sessionGroups.archiveSession",
+          "when": "view == sessionGroups.groups && viewItem =~ /^(session|activeSession)$/",
+          "group": "inline@2"
+        },
+        {
+          "command": "sessionGroups.renameSession",
+          "when": "view == sessionGroups.groups && viewItem =~ /^(session|activeSession)$/",
+          "group": "inline@1"
+        },
+        {
+          "command": "sessionGroups.openSession",
+          "when": "view == sessionGroups.groups && viewItem =~ /^(session|activeSession)$/",
+          "group": "0_open@1"
+        },
+        {
+          "command": "sessionGroups.closeTerminal",
+          "when": "view == sessionGroups.groups && viewItem == activeSession",
+          "group": "0_open@2"
+        },
+        {
+          "command": "sessionGroups.renameSession",
+          "when": "view == sessionGroups.groups && viewItem =~ /^(session|activeSession)$/",
+          "group": "1_modify@1"
+        },
+        {
+          "command": "sessionGroups.archiveSession",
+          "when": "view == sessionGroups.groups && viewItem =~ /^(session|activeSession)$/",
+          "group": "1_modify@2"
+        },
+        {
+          "command": "sessionGroups.editSessionId",
+          "when": "view == sessionGroups.groups && viewItem == session",
+          "group": "1_modify@3"
+        },
+        {
+          "command": "sessionGroups.deleteSession",
+          "when": "view == sessionGroups.groups && viewItem =~ /^(session|activeSession)$/",
+          "group": "9_delete"
+        },
+        {
+          "command": "sessionGroups.newUngroupedSession",
+          "when": "view == sessionGroups.groups && viewItem == ungrouped",
+          "group": "inline"
+        },
+        {
+          "command": "sessionGroups.newSessionWith",
+          "when": "view == sessionGroups.groups && viewItem == ungrouped",
+          "group": "0_new"
+        },
+        {
+          "command": "sessionGroups.addExistingSession",
+          "when": "view == sessionGroups.groups && viewItem == ungrouped",
+          "group": "0_new@2"
+        },
+        {
+          "command": "sessionGroups.unarchiveSession",
+          "when": "view == sessionGroups.archived && viewItem == archivedSession",
+          "group": "inline"
+        },
+        {
+          "command": "sessionGroups.renameSession",
+          "when": "view == sessionGroups.archived && viewItem == archivedSession",
+          "group": "1_modify"
+        },
+        {
+          "command": "sessionGroups.editSessionId",
+          "when": "view == sessionGroups.archived && viewItem == archivedSession",
+          "group": "1_modify@2"
+        },
+        {
+          "command": "sessionGroups.deleteSession",
+          "when": "view == sessionGroups.archived && viewItem == archivedSession",
+          "group": "9_delete"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Session Groups",
+      "properties": {
+        "sessionGroups.defaultFolder": {
+          "type": "string",
+          "default": "",
+          "description": "Folder an ungrouped session starts in, and where the folder picker opens when creating a group. Empty: the first workspace folder, else the home folder."
+        },
+        "sessionGroups.defaultAgent": {
+          "type": "string",
+          "default": "claude",
+          "description": "Agent a new session starts when its group has none chosen, and for sessions without a group: the id of a built-in agent (claude, opencode, copilot, gemini, qwen, goose) or of one in sessionGroups.agents."
+        },
+        "sessionGroups.agents": {
+          "type": "array",
+          "default": [],
+          "description": "More agents, or replacements for a built-in one (same id). {id} in start and resume is the session id the extension chooses; idPrefix is for agents that only take ids in their own format.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "name",
+              "start",
+              "resume"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "start": {
+                "type": "string",
+                "description": "Command that starts a session with id {id}"
+              },
+              "resume": {
+                "type": "string",
+                "description": "Command that resumes session {id}"
+              },
+              "idPrefix": {
+                "type": "string",
+                "description": "Prefix of the agent's own id format; the id is then the prefix plus a UUID without dashes"
+              },
+              "idPattern": {
+                "type": "string",
+                "description": "Regular expression an id typed in Edit Session ID must match"
+              }
+            }
+          }
+        },
+        "sessionGroups.notifyWhenFinished": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a notification when a running Claude or OpenCode session finishes its turn while its terminal is not in front."
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "sessionGroups.renameSelected",
+        "key": "f2",
+        "when": "focusedView == sessionGroups.groups && !inputFocus",
+        "args": "groups"
+      },
+      {
+        "command": "sessionGroups.deleteSelected",
+        "key": "delete",
+        "mac": "cmd+backspace",
+        "when": "focusedView == sessionGroups.groups && !inputFocus",
+        "args": "groups"
+      },
+      {
+        "command": "sessionGroups.renameSelected",
+        "key": "f2",
+        "when": "focusedView == sessionGroups.archived && !inputFocus",
+        "args": "archived"
+      },
+      {
+        "command": "sessionGroups.deleteSelected",
+        "key": "delete",
+        "mac": "cmd+backspace",
+        "when": "focusedView == sessionGroups.archived && !inputFocus",
+        "args": "archived"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "package": "npm run build && vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "@types/vscode": "1.97.0",
+    "@vscode/vsce": "4.0.0",
+    "esbuild": "0.28.2",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  },
+  "icon": "media/icon.png"
+}
