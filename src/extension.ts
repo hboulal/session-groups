@@ -2,7 +2,7 @@ import * as crypto from 'node:crypto';
 import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as vscode from 'vscode';
-import { CLAUDE, OPENCODE, idProblem, newSessionId, resolveAgents, startFolder, type Agent, type Group, type Session } from './model';
+import { CLAUDE, OPENCODE, dateName, idProblem, newSessionId, resolveAgents, startFolder, type Agent, type Group, type Session } from './model';
 import { Store } from './store';
 import { activeCount, archivedChildren, GROUP_COLORS, groupColor, searchItems } from './view';
 import { Terminals } from './terminals';
@@ -150,8 +150,8 @@ export function activate(context: vscode.ExtensionContext): void {
     const session: Session = {
       id: newSessionId(agent, crypto.randomUUID()),
       groupId: from.groupId,
-      // Blank until Claude names the session (/rename).
-      name: '',
+      // The start date until Claude names the session (/rename) or it is renamed in the panel.
+      name: dateName(now),
       before: from.before,
       shellPath: from.shellPath,
       cwd: startFolder(from.folder, defaultFolder(), vscode.workspace.workspaceFolders?.[0]?.uri.fsPath, os.homedir()),
@@ -418,7 +418,7 @@ export function activate(context: vscode.ExtensionContext): void {
       const session: Session = {
         id,
         groupId: group?.id ?? '',
-        name: '',
+        name: dateName(new Date()),
         before: '',
         shellPath: group?.shellPath ?? vscode.env.shell,
         cwd: startFolder(ranIn, group?.folder, defaultFolder(), vscode.workspace.workspaceFolders?.[0]?.uri.fsPath, os.homedir()),

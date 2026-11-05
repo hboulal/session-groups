@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BUILTIN_AGENTS, CLAUDE, COPILOT, GEMINI, GOOSE, OPENCODE, QWEN, fillTemplate, ageLabel, idProblem, newSessionId, resolveAgents, startFolder } from './model';
+import { BUILTIN_AGENTS, CLAUDE, COPILOT, GEMINI, GOOSE, OPENCODE, QWEN, fillTemplate, ageLabel, dateName, idProblem, newSessionId, resolveAgents, startFolder } from './model';
 
 describe('fillTemplate', () => {
   it('fills the id', () => {
@@ -80,5 +80,11 @@ describe('ageLabel', () => {
   });
   it('is N days', () => {
     expect(ageLabel(created(25, 12, 0), new Date(2026, 9, 30, 8, 0))).toBe('5 days');
+  });
+});
+
+describe('dateName', () => {
+  it('is the local date and time, zero-padded', () => {
+    expect(dateName(new Date(2026, 0, 5, 9, 7))).toBe('2026-01-05 09:07');
   });
 });

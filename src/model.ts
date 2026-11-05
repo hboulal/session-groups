@@ -61,6 +61,12 @@ export function fillTemplate(template: string, id: string): string {
   return template.split('{id}').join(id);
 }
 
+// A new session's name until the agent or the user names it: its local start date and time, `YYYY-MM-DD HH:mm`.
+export function dateName(at: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())} ${pad(at.getHours())}:${pad(at.getMinutes())}`;
+}
+
 export function ageLabel(createdAt: string, now: Date): string {
   const at = new Date(createdAt);
   const days = Math.round((Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(at.getFullYear(), at.getMonth(), at.getDate())) / 86_400_000);
