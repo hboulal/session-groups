@@ -76,12 +76,12 @@ export class GroupsTree implements vscode.TreeDataProvider<TreeNode>, vscode.Dis
       item.description = groupDescription(state, element.id, id => this.terminals.isOpen(id));
       return item;
     }
-    if (!this.flat) { return sessionItem(state, element, element.name, this.terminals, this.agents(), this.env, false); }
-    // Without group rows, the icon carries the group's colour while colours are shown.
+    // A grouped session's icon carries its group's colour while colours are shown, alike with and without group rows.
     const group = state.groups.find(g => g.id === element.groupId);
     const color = group && this.colors ? groupColor(state, group) : undefined;
     const mark = color && canMark(color) ? color : undefined;
-    return sessionItem(state, element, flatLabel(state, element, mark !== undefined), this.terminals, this.agents(), this.env, false, false, mark);
+    const label = this.flat ? flatLabel(state, element, mark !== undefined) : element.name;
+    return sessionItem(state, element, label, this.terminals, this.agents(), this.env, false, false, mark);
   }
 
   // Session tooltips are built on hover, since the last activity is read from the agent's files.

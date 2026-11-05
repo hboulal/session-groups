@@ -34,12 +34,13 @@ Nothing is deleted from the agents themselves: removing or archiving a session o
 - **Group settings:** the gear on a group opens a menu to rename it, change its colour, folder or agent, or delete it.
   - Delete Group moves its sessions to Ungrouped.
   - Delete Group and Sessions removes them too, after a confirmation.
+- **Group colours:** each session's icon carries a small square in its group's colour.
 - **Session actions:** inline Rename and Archive buttons; right-click for Open, Close Terminal, Edit Session ID and Delete.
 - **Keys:** F2 renames the selected row. Delete archives the selected session in Groups, and deletes it from Archived after a confirmation.
 - **View title buttons:**
   - search;
   - show only running sessions (lightning);
-  - show sessions without groups, their icons marked with their group's colour (`group/session` when colours are hidden);
+  - show sessions without groups (labelled `group/session` when colours are hidden);
   - in the "…" menu, Hide Group Colors.
 - **Drag and drop** reorders groups and sessions, and moves sessions between groups, while groups are shown.
 

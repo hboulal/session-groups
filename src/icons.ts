@@ -1,4 +1,4 @@
-// Session icons marked with their group's colour, for the view without groups: a small square in the bottom-right corner.
+// Session icons marked with their group's colour in the Groups view: a small square in the bottom-right corner.
 // They are images, so the colours are the default chart colours of VS Code's dark and light themes, not the active theme's.
 
 export type MarkedKind = 'active' | 'unseen' | 'idle';
