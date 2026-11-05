@@ -3,6 +3,7 @@ import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as vscode from 'vscode';
 import { CLAUDE, OPENCODE, dateName, idProblem, newSessionId, resolveAgents, startFolder, type Agent, type Group, type Session } from './model';
+import { markedName } from './icons';
 import { Store } from './store';
 import { activeCount, archivedChildren, GROUP_COLORS, groupColor, searchItems } from './view';
 import { Terminals } from './terminals';
@@ -43,12 +44,14 @@ export function activate(context: vscode.ExtensionContext): void {
   const activeIcon = { light: vscode.Uri.joinPath(context.extensionUri, 'media', 'active-light.svg'), dark: vscode.Uri.joinPath(context.extensionUri, 'media', 'active-dark.svg') };
   // Last activity is the transcript's modification time; only Claude's transcript is known.
   const unseenIcon = { light: vscode.Uri.joinPath(context.extensionUri, 'media', 'unseen-light.svg'), dark: vscode.Uri.joinPath(context.extensionUri, 'media', 'unseen-dark.svg') };
+  const markedDir = vscode.Uri.joinPath(context.extensionUri, 'media', 'marked');
   // Whose turn it is in each running Claude or OpenCode session, from the agent's own records; 'unseen' marks a finish not looked at yet.
   const turns = new Map<string, Turn>();
   const unseen = new Set<string>();
   const hover: TreeEnv = {
     activeIcon,
     unseenIcon,
+    markedIcon: (kind, color) => ({ light: vscode.Uri.joinPath(markedDir, markedName(kind, color, 'light')), dark: vscode.Uri.joinPath(markedDir, markedName(kind, color, 'dark')) }),
     turn: (id): SessionTurn | undefined => unseen.has(id) ? 'unseen' : turns.get(id),
     defaultFolder: () => defaultFolder(),
     agentFor: group => agentFor(group),

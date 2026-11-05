@@ -39,7 +39,7 @@ Nothing is deleted from the agents themselves: removing or archiving a session o
 - **View title buttons:**
   - search;
   - show only running sessions (lightning);
-  - show sessions without groups, labelled `group/session`;
+  - show sessions without groups, their icons marked with their group's colour (`group/session` when colours are hidden);
   - in the "…" menu, Enable Reorder (drag and drop is off by default) and Hide Group Colors.
 
 ## Agents

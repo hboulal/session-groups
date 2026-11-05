@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { canMark, type MarkedKind } from './icons';
 import type { Agent, Group, Session } from './model';
 import type { State, Store } from './store';
 import type { Terminals } from './terminals';
@@ -75,7 +76,12 @@ export class GroupsTree implements vscode.TreeDataProvider<TreeNode>, vscode.Dis
       item.description = groupDescription(state, element.id, id => this.terminals.isOpen(id));
       return item;
     }
-    return sessionItem(state, element, this.flat ? flatLabel(state, element) : element.name, this.terminals, this.agents(), this.env, false);
+    if (!this.flat) { return sessionItem(state, element, element.name, this.terminals, this.agents(), this.env, false); }
+    // Without group rows, the icon carries the group's colour while colours are shown.
+    const group = state.groups.find(g => g.id === element.groupId);
+    const color = group && this.colors ? groupColor(state, group) : undefined;
+    const mark = color && canMark(color) ? color : undefined;
+    return sessionItem(state, element, flatLabel(state, element, mark !== undefined), this.terminals, this.agents(), this.env, false, false, mark);
   }
 
   // Session tooltips are built on hover, since the last activity is read from the agent's files.
@@ -155,6 +161,7 @@ export type SessionTurn = 'working' | 'done' | 'unseen';
 export interface TreeEnv {
   activeIcon: ActiveIcon;
   unseenIcon: ActiveIcon;
+  markedIcon(kind: MarkedKind, color: string): ActiveIcon;
   turn(sessionId: string): SessionTurn | undefined;
   defaultFolder(): string | undefined;
   agentFor(group: Group | undefined): Agent | undefined;
@@ -210,12 +217,14 @@ function groupIcon(state: State, group: Group | undefined, colors: boolean): vsc
 // The active icon is an image, not a coloured codicon: a selected row repaints codicons in the selection colour, an image keeps its green.
 export type ActiveIcon = { light: vscode.Uri; dark: vscode.Uri };
 
-function sessionItem(state: State, element: Session, label: string, terminals: Terminals, agents: readonly Agent[], env: TreeEnv, archived: boolean, withGroup = archived): vscode.TreeItem {
+function sessionItem(state: State, element: Session, label: string, terminals: Terminals, agents: readonly Agent[], env: TreeEnv, archived: boolean, withGroup = archived, mark?: string): vscode.TreeItem {
   const item = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.None);
   item.id = element.id;
   const active = terminals.isOpen(element.id);
   const turn = active ? env.turn(element.id) : undefined;
-  item.iconPath = turn === 'working' ? new vscode.ThemeIcon('loading~spin') : turn === 'unseen' ? env.unseenIcon : active ? env.activeIcon : new vscode.ThemeIcon(archived ? 'archive' : 'history');
+  item.iconPath = turn === 'working' ? new vscode.ThemeIcon('loading~spin')
+    : mark ? env.markedIcon(turn === 'unseen' ? 'unseen' : active ? 'active' : 'idle', mark)
+      : turn === 'unseen' ? env.unseenIcon : active ? env.activeIcon : new vscode.ThemeIcon(archived ? 'archive' : 'history');
   item.contextValue = archived ? 'archivedSession' : active ? 'activeSession' : 'session';
   item.description = sessionDescription(state, element, new Date(), withGroup, agents);
   if (!archived) { item.command = { command: 'sessionGroups.openSession', title: 'Open Session', arguments: [element] }; }

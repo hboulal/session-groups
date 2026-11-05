@@ -15,9 +15,16 @@ describe('flatChildren and flatLabel', () => {
     };
     expect(flatChildren(state).map(x => x.id)).toEqual(['b', 'a', 'u']);
     expect(flatChildren(state, id => id === 'a').map(x => x.id)).toEqual(['a']);
-    expect(flatLabel(state, state.sessions[1]!)).toBe('api/b');
-    expect(flatLabel(state, state.sessions[2]!)).toBe('u');
-    expect(flatLabel(state, { ...state.sessions[1]!, name: '' })).toBe('api');
+    expect(flatLabel(state, state.sessions[1]!, false)).toBe('api/b');
+    expect(flatLabel(state, state.sessions[2]!, false)).toBe('u');
+    expect(flatLabel(state, { ...state.sessions[1]!, name: '' }, false)).toBe('api');
+  });
+
+  it('leaves the group name out when the icon carries the group colour', () => {
+    const state: State = { version: 1, groups: [group('g1', 'api')], sessions: [] };
+    expect(flatLabel(state, session('a', 'g1', '2026-10-01T00:00:00Z'), true)).toBe('a');
+    expect(flatLabel(state, { ...session('a', 'g1', '2026-10-01T00:00:00Z'), name: '' }, true)).toBe('api');
+    expect(flatLabel(state, session('u', '', '2026-10-01T00:00:00Z'), true)).toBe('u');
   });
 });
 
