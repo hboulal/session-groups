@@ -2,7 +2,7 @@
   "name": "session-groups",
   "displayName": "Session Groups",
   "description": "A side panel of your own groups of coding-agent sessions: each session runs in a terminal and resumes after VS Code restarts.",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "publisher": "hboulal",
   "license": "MIT",
   "repository": {
