@@ -52,6 +52,15 @@ export function startFolder(...candidates: (string | undefined)[]): string {
   return candidates.find(c => c !== undefined && c.trim() !== '') ?? '';
 }
 
+// The first group, in stored order, whose start folder is `folder`. On Windows paths compare ignoring case and the kind of slash.
+export function groupForFolder(groups: readonly Group[], folder: string, windows: boolean): Group | undefined {
+  const norm = (p: string) => {
+    const t = (windows ? p.replace(/\\/g, '/').toLowerCase() : p).replace(/\/+$/, '');
+    return t === '' ? '/' : t;
+  };
+  return groups.find(g => g.folder !== undefined && g.folder.trim() !== '' && norm(g.folder) === norm(folder));
+}
+
 function validPattern(p: unknown): boolean {
   if (typeof p !== 'string') { return false; }
   try { new RegExp(p); return true; } catch { return false; }

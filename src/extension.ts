@@ -1,8 +1,9 @@
 import * as crypto from 'node:crypto';
 import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
+import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { CLAUDE, OPENCODE, dateName, idProblem, newSessionId, resolveAgents, startFolder, type Agent, type Group, type Session } from './model';
+import { CLAUDE, OPENCODE, dateName, groupForFolder, idProblem, newSessionId, resolveAgents, startFolder, type Agent, type Group, type Session } from './model';
 import { markedName } from './icons';
 import { Store } from './store';
 import { activeCount, archivedChildren, GROUP_COLORS, groupColor, searchItems } from './view';
@@ -172,6 +173,17 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const required = (value: string) => value.trim() === '' ? 'A name is required' : undefined;
 
+  // From the Explorer's context menu: the folder clicked on.
+  const explorerFolder = (arg: unknown): string | undefined => arg instanceof vscode.Uri && arg.scheme === 'file' ? arg.fsPath : undefined;
+  const folderGroup = (folder: string): Group | undefined => groupForFolder(store.read().groups, folder, process.platform === 'win32');
+  // A group starting in `folder`, named after it unless renamed in the prompt, with the default shell.
+  const addGroupAt = async (folder: string): Promise<Group | undefined> => {
+    const name = await vscode.window.showInputBox({ prompt: 'Group name', value: path.basename(folder), validateInput: required });
+    if (name === undefined) { return undefined; }
+    const group: Group = { id: crypto.randomUUID(), name: name.trim(), before: '', shellPath: vscode.env.shell, color: GROUP_COLORS[store.read().groups.length % GROUP_COLORS.length], folder };
+    return await attempt(() => store.addGroup(group)) ? group : undefined;
+  };
+
   const register = (id: string, handler: (arg?: unknown) => unknown) =>
     vscode.commands.registerCommand(`sessionGroups.${id}`, handler);
 
@@ -270,6 +282,19 @@ export function activate(context: vscode.ExtensionContext): void {
 
     register('newUngroupedSession', async () => {
       await startSession({ groupId: '', folder: undefined, before: '', shellPath: vscode.env.shell }, agentFor(undefined));
+    }),
+
+    // Explorer: a session in the first group starting in the clicked folder, adding that group first when there is none.
+    register('newGroupedSessionHere', async arg => {
+      const folder = explorerFolder(arg);
+      if (!folder) { return; }
+      const group = folderGroup(folder) ?? await addGroupAt(folder);
+      if (group) { await startSession({ groupId: group.id, folder: group.folder, before: group.before, shellPath: group.shellPath }, agentFor(group)); }
+    }),
+
+    register('newUngroupedSessionHere', async arg => {
+      const folder = explorerFolder(arg);
+      if (folder) { await startSession({ groupId: '', folder, before: '', shellPath: vscode.env.shell }, agentFor(undefined)); }
     }),
 
     register('newSessionWith', async arg => {

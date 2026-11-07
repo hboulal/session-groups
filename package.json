@@ -228,10 +228,40 @@
         "command": "sessionGroups.deleteSelected",
         "title": "Delete Selected",
         "category": "Session Groups"
+      },
+      {
+        "command": "sessionGroups.newGroupedSessionHere",
+        "title": "New Grouped Session Here",
+        "category": "Session Groups"
+      },
+      {
+        "command": "sessionGroups.newUngroupedSessionHere",
+        "title": "New Ungrouped Session Here",
+        "category": "Session Groups"
       }
     ],
     "menus": {
+      "explorer/context": [
+        {
+          "command": "sessionGroups.newGroupedSessionHere",
+          "when": "explorerResourceIsFolder && !listMultiSelection",
+          "group": "2_workspace@9"
+        },
+        {
+          "command": "sessionGroups.newUngroupedSessionHere",
+          "when": "explorerResourceIsFolder && !listMultiSelection",
+          "group": "2_workspace@10"
+        }
+      ],
       "commandPalette": [
+        {
+          "command": "sessionGroups.newGroupedSessionHere",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.newUngroupedSessionHere",
+          "when": "false"
+        },
         {
           "command": "sessionGroups.newSession",
           "when": "false"

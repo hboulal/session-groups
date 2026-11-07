@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BUILTIN_AGENTS, CLAUDE, COPILOT, GEMINI, GOOSE, OPENCODE, QWEN, fillTemplate, ageLabel, dateName, idProblem, newSessionId, resolveAgents, startFolder } from './model';
+import { BUILTIN_AGENTS, CLAUDE, COPILOT, GEMINI, GOOSE, OPENCODE, QWEN, fillTemplate, ageLabel, dateName, groupForFolder, idProblem, newSessionId, resolveAgents, startFolder } from './model';
 
 describe('fillTemplate', () => {
   it('fills the id', () => {
@@ -86,5 +86,22 @@ describe('ageLabel', () => {
 describe('dateName', () => {
   it('is the local date and time, zero-padded', () => {
     expect(dateName(new Date(2026, 0, 5, 9, 7))).toBe('2026-01-05 09:07');
+  });
+});
+
+describe('groupForFolder', () => {
+  const g = (id: string, folder?: string) => ({ id, name: id, before: '', shellPath: '', ...(folder === undefined ? {} : { folder }) });
+  const groups = [g('none'), g('blank', ' '), g('win', 'C:\\Work\\Api'), g('unix', '/home/me/web/')];
+
+  it('finds the group starting in the folder', () => {
+    expect(groupForFolder(groups, '/home/me/web', false)?.id).toBe('unix');
+    expect(groupForFolder(groups, '/home/me/Web', false)).toBeUndefined();
+    expect(groupForFolder(groups, '/home/me', false)).toBeUndefined();
+  });
+
+  it('ignores case and slashes on Windows', () => {
+    expect(groupForFolder(groups, 'c:/work/api/', true)?.id).toBe('win');
+    expect(groupForFolder(groups, 'C:\\Work\\Api', false)?.id).toBe('win');
+    expect(groupForFolder(groups, 'c:\\work\\api', false)).toBeUndefined();
   });
 });
