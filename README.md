@@ -30,7 +30,7 @@ Nothing is deleted from the agents themselves: removing or archiving a session o
 
 - **New group:** the new-folder button in the Groups view title.
 - **New session:** the "+" on a group, or on Ungrouped.
-- **From the Explorer:** right-click a folder → New Grouped Session Here (in the first group starting in that folder, created when there is none) or New Ungrouped Session Here.
+- **From the Explorer:** right-click a folder → New Grouped Session Here (in the group starting in that folder, picked when several do, created when none does) or New Ungrouped Session Here.
 - **Session with another agent:** right-click a group and choose New Session With…
 - **Group settings:** the gear on a group opens a menu to rename it, change its colour, folder or agent, or delete it.
   - Delete Group moves its sessions to Ungrouped.

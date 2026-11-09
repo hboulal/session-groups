@@ -3,7 +3,7 @@ import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { CLAUDE, OPENCODE, dateName, groupForFolder, idProblem, newSessionId, resolveAgents, startFolder, type Agent, type Group, type Session } from './model';
+import { CLAUDE, OPENCODE, dateName, groupsForFolder, idProblem, newSessionId, resolveAgents, startFolder, type Agent, type Group, type Session } from './model';
 import { markedName } from './icons';
 import { Store } from './store';
 import { activeCount, archivedChildren, GROUP_COLORS, groupColor, searchItems } from './view';
@@ -175,7 +175,6 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // From the Explorer's context menu: the folder clicked on.
   const explorerFolder = (arg: unknown): string | undefined => arg instanceof vscode.Uri && arg.scheme === 'file' ? arg.fsPath : undefined;
-  const folderGroup = (folder: string): Group | undefined => groupForFolder(store.read().groups, folder, process.platform === 'win32');
   // A group starting in `folder`, named after it unless renamed in the prompt, with the default shell.
   const addGroupAt = async (folder: string): Promise<Group | undefined> => {
     const name = await vscode.window.showInputBox({ prompt: 'Group name', value: path.basename(folder), validateInput: required });
@@ -284,11 +283,14 @@ export function activate(context: vscode.ExtensionContext): void {
       await startSession({ groupId: '', folder: undefined, before: '', shellPath: vscode.env.shell }, agentFor(undefined));
     }),
 
-    // Explorer: a session in the first group starting in the clicked folder, adding that group first when there is none.
+    // Explorer: a session in the group starting in the clicked folder, picked when several do, added first when none does.
     register('newGroupedSessionHere', async arg => {
       const folder = explorerFolder(arg);
       if (!folder) { return; }
-      const group = folderGroup(folder) ?? await addGroupAt(folder);
+      const groups = groupsForFolder(store.read().groups, folder, process.platform === 'win32');
+      const group = groups.length === 0 ? await addGroupAt(folder)
+        : groups.length === 1 ? groups[0]
+          : (await vscode.window.showQuickPick(groups.map(g => ({ label: g.name, group: g })), { placeHolder: 'Group to start the session in' }))?.group;
       if (group) { await startSession({ groupId: group.id, folder: group.folder, before: group.before, shellPath: group.shellPath }, agentFor(group)); }
     }),
 

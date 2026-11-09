@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BUILTIN_AGENTS, CLAUDE, COPILOT, GEMINI, GOOSE, OPENCODE, QWEN, fillTemplate, ageLabel, dateName, groupForFolder, idProblem, newSessionId, resolveAgents, startFolder } from './model';
+import { BUILTIN_AGENTS, CLAUDE, COPILOT, GEMINI, GOOSE, OPENCODE, QWEN, fillTemplate, ageLabel, dateName, groupsForFolder, idProblem, newSessionId, resolveAgents, startFolder } from './model';
 
 describe('fillTemplate', () => {
   it('fills the id', () => {
@@ -89,27 +89,31 @@ describe('dateName', () => {
   });
 });
 
-describe('groupForFolder', () => {
+describe('groupsForFolder', () => {
   const g = (id: string, folder?: string) => ({ id, name: id, before: '', shellPath: '', ...(folder === undefined ? {} : { folder }) });
   const groups = [g('none'), g('blank', ' '), g('win', 'C:\\Work\\Api'), g('unix', '/home/me/web/')];
 
   it('finds the group starting in the folder', () => {
-    expect(groupForFolder(groups, '/home/me/web', false)?.id).toBe('unix');
-    expect(groupForFolder(groups, '/home/me/Web', false)).toBeUndefined();
-    expect(groupForFolder(groups, '/home/me', false)).toBeUndefined();
+    expect(groupsForFolder(groups, '/home/me/web', false).map(g => g.id)).toEqual(['unix']);
+    expect(groupsForFolder(groups, '/home/me/Web', false)).toEqual([]);
+    expect(groupsForFolder(groups, '/home/me', false)).toEqual([]);
   });
 
   it('ignores case and slashes on Windows', () => {
-    expect(groupForFolder(groups, 'c:/work/api/', true)?.id).toBe('win');
-    expect(groupForFolder(groups, 'C:\\Work\\Api', false)?.id).toBe('win');
-    expect(groupForFolder(groups, 'c:\\work\\api', false)).toBeUndefined();
+    expect(groupsForFolder(groups, 'c:/work/api/', true).map(g => g.id)).toEqual(['win']);
+    expect(groupsForFolder(groups, 'C:\\Work\\Api', false).map(g => g.id)).toEqual(['win']);
+    expect(groupsForFolder(groups, 'c:\\work\\api', false)).toEqual([]);
   });
 
   it('reads the folder of a lone cd in the before command', () => {
     const cd = (id: string, before: string) => ({ id, name: id, before, shellPath: '' });
     const older = [cd('chain', 'cd C:/a && npm i'), cd('plain', 'cd C:/a'), cd('quoted', 'cd /d "C:\\My Work"')];
-    expect(groupForFolder(older, 'c:\\a', true)?.id).toBe('plain');
-    expect(groupForFolder(older, 'C:\\My Work', true)?.id).toBe('quoted');
-    expect(groupForFolder([{ ...cd('both', 'cd C:/a'), folder: 'C:/b' }], 'C:/a', true)).toBeUndefined();
+    expect(groupsForFolder(older, 'c:\\a', true).map(g => g.id)).toEqual(['plain']);
+    expect(groupsForFolder(older, 'C:\\My Work', true).map(g => g.id)).toEqual(['quoted']);
+    expect(groupsForFolder([{ ...cd('both', 'cd C:/a'), folder: 'C:/b' }], 'C:/a', true)).toEqual([]);
+  });
+
+  it('returns every group starting in the folder, in stored order', () => {
+    expect(groupsForFolder([g('b', '/x'), g('other', '/y'), g('a', '/x/')], '/x', false).map(x => x.id)).toEqual(['b', 'a']);
   });
 });
