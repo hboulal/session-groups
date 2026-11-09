@@ -104,4 +104,12 @@ describe('groupForFolder', () => {
     expect(groupForFolder(groups, 'C:\\Work\\Api', false)?.id).toBe('win');
     expect(groupForFolder(groups, 'c:\\work\\api', false)).toBeUndefined();
   });
+
+  it('reads the folder of a lone cd in the before command', () => {
+    const cd = (id: string, before: string) => ({ id, name: id, before, shellPath: '' });
+    const older = [cd('chain', 'cd C:/a && npm i'), cd('plain', 'cd C:/a'), cd('quoted', 'cd /d "C:\\My Work"')];
+    expect(groupForFolder(older, 'c:\\a', true)?.id).toBe('plain');
+    expect(groupForFolder(older, 'C:\\My Work', true)?.id).toBe('quoted');
+    expect(groupForFolder([{ ...cd('both', 'cd C:/a'), folder: 'C:/b' }], 'C:/a', true)).toBeUndefined();
+  });
 });

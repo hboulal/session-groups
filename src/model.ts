@@ -52,13 +52,17 @@ export function startFolder(...candidates: (string | undefined)[]): string {
   return candidates.find(c => c !== undefined && c.trim() !== '') ?? '';
 }
 
-// The first group, in stored order, whose start folder is `folder`. On Windows paths compare ignoring case and the kind of slash.
+// The first group, in stored order, whose start folder is `folder`. A group without a folder whose "before" command is a lone `cd <path>` starts in that path.
+// On Windows paths compare ignoring case and the kind of slash.
 export function groupForFolder(groups: readonly Group[], folder: string, windows: boolean): Group | undefined {
   const norm = (p: string) => {
     const t = (windows ? p.replace(/\\/g, '/').toLowerCase() : p).replace(/\/+$/, '');
     return t === '' ? '/' : t;
   };
-  return groups.find(g => g.folder !== undefined && g.folder.trim() !== '' && norm(g.folder) === norm(folder));
+  const startsIn = (g: Group): string | undefined => g.folder !== undefined && g.folder.trim() !== ''
+    ? g.folder
+    : /^\s*cd\s+(?:\/d\s+)?(["']?)(.+?)\1\s*$/i.exec(g.before)?.[2];
+  return groups.find(g => { const start = startsIn(g); return start !== undefined && norm(start) === norm(folder); });
 }
 
 function validPattern(p: unknown): boolean {
