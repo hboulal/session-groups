@@ -208,7 +208,7 @@ function groupIcon(state: State, group: Group | undefined): vscode.ThemeIcon {
   return group ? new vscode.ThemeIcon('circle-filled', new vscode.ThemeColor(groupColor(state, group))) : new vscode.ThemeIcon('circle-outline');
 }
 
-// Every session icon except the working spinner and the archive icon is an image, not a coloured codicon: a selected row repaints codicons in the selection colour, an image keeps its colours.
+// Every session icon except the archive icon is an image, not a coloured codicon: a selected row repaints codicons in the selection colour, an image keeps its colours.
 export type ActiveIcon = { light: vscode.Uri; dark: vscode.Uri };
 
 function sessionItem(state: State, element: Session, label: string, terminals: Terminals, agents: readonly Agent[], env: TreeEnv, archived: boolean, withGroup = archived, mark?: string): vscode.TreeItem {
@@ -216,7 +216,7 @@ function sessionItem(state: State, element: Session, label: string, terminals: T
   item.id = element.id;
   const active = terminals.isOpen(element.id);
   const turn = active ? env.turn(element.id) : undefined;
-  item.iconPath = turn === 'working' ? new vscode.ThemeIcon('loading~spin')
+  item.iconPath = turn === 'working' ? env.icon({ kind: 'working', pinned: !archived && element.pinned === true, color: mark, animated: env.animations() })
     : archived && !active ? new vscode.ThemeIcon('archive')
       : env.icon({ kind: turn === 'unseen' ? 'unseen' : active ? 'active' : 'idle', pinned: !archived && element.pinned === true, color: mark, animated: turn === 'unseen' && env.animations() });
   item.contextValue = archived ? 'archivedSession' : element.pinned === true ? (active ? 'pinnedActiveSession' : 'pinnedSession') : active ? 'activeSession' : 'session';
