@@ -53,10 +53,10 @@ describe('session icons', () => {
     expect(iconSvg({ kind: 'active', pinned: false }, 'dark')).not.toContain('x="11.25"');
   });
 
-  it('animates only the unseen twin: the cursor blinks twice and the dot brightens twice, then both freeze', () => {
+  it('animates only the unseen twin, in a loop: the cursor blinks and the dot pulses', () => {
     const svg = iconSvg({ kind: 'unseen', pinned: false, animated: true }, 'light');
-    expect(svg).toContain('<animate attributeName="opacity" values="1;0;0;1;1;0;0;1" keyTimes="0;0.01;0.25;0.26;0.5;0.51;0.75;0.76" dur="1s" calcMode="discrete" fill="freeze"/>');
-    expect(svg).toContain('<animate attributeName="fill" values="#E51400;#FF9B9B;#E51400;#FF9B9B;#E51400" keyTimes="0;0.25;0.5;0.75;1" dur="0.6s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1" fill="freeze"/>');
+    expect(svg).toContain('<animate attributeName="opacity" values="1;0" keyTimes="0;0.5" dur="1s" calcMode="discrete" repeatCount="indefinite"/>');
+    expect(svg).toContain('<animate attributeName="fill" values="#E51400;#FF9B9B;#E51400" keyTimes="0;0.5;1" dur="1.2s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" repeatCount="indefinite"/>');
     expect(iconSvg({ kind: 'active', pinned: false, animated: true }, 'light')).not.toContain('<animate');
   });
 

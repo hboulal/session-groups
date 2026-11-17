@@ -36,9 +36,9 @@ const SQUARE = 'x="11.25" y="11.25" width="4.5" height="4.5" rx="1"';
 const DOT_RING = 'cx="13.5" cy="3.5" r="3.2"';
 const DOT = 'cx="13.5" cy="3.5" r="2.5"';
 
-// The cursor blinks twice and the dot brightens twice, then both stay as in the still icon.
-const BLINK = '<animate attributeName="opacity" values="1;0;0;1;1;0;0;1" keyTimes="0;0.01;0.25;0.26;0.5;0.51;0.75;0.76" dur="1s" calcMode="discrete" fill="freeze"/>';
-const brighten = (theme: IconTheme) => `<animate attributeName="fill" values="${UNSEEN_DOT[theme]};${UNSEEN_DOT_BRIGHT[theme]};${UNSEEN_DOT[theme]};${UNSEEN_DOT_BRIGHT[theme]};${UNSEEN_DOT[theme]}" keyTimes="0;0.25;0.5;0.75;1" dur="0.6s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1" fill="freeze"/>`;
+// Both loop: the cursor blinks on and off every half second and the dot pulses to a pale red and back every 1.2 s.
+const BLINK = '<animate attributeName="opacity" values="1;0" keyTimes="0;0.5" dur="1s" calcMode="discrete" repeatCount="indefinite"/>';
+const brighten = (theme: IconTheme) => `<animate attributeName="fill" values="${UNSEEN_DOT[theme]};${UNSEEN_DOT_BRIGHT[theme]};${UNSEEN_DOT[theme]}" keyTimes="0;0.5;1" dur="1.2s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" repeatCount="indefinite"/>`;
 
 const el = (tag: string, attrs: string, child = '') => child ? `<${tag} ${attrs}>${child}</${tag}>` : `<${tag} ${attrs}/>`;
 const filled = (fill: string) => `fill="${fill}" stroke="none"`;

@@ -156,7 +156,7 @@ export class ArchivedTree implements vscode.TreeDataProvider<ArchivedNode>, vsco
 export type SessionTurn = 'working' | 'done' | 'unseen';
 export interface TreeEnv {
   icon(spec: IconSpec): ActiveIcon;
-  justFinished(sessionId: string): boolean;
+  animations(): boolean;
   turn(sessionId: string): SessionTurn | undefined;
   defaultFolder(): string | undefined;
   agentFor(group: Group | undefined): Agent | undefined;
@@ -218,7 +218,7 @@ function sessionItem(state: State, element: Session, label: string, terminals: T
   const turn = active ? env.turn(element.id) : undefined;
   item.iconPath = turn === 'working' ? new vscode.ThemeIcon('loading~spin')
     : archived && !active ? new vscode.ThemeIcon('archive')
-      : env.icon({ kind: turn === 'unseen' ? 'unseen' : active ? 'active' : 'idle', pinned: !archived && element.pinned === true, color: mark, animated: turn === 'unseen' && env.justFinished(element.id) });
+      : env.icon({ kind: turn === 'unseen' ? 'unseen' : active ? 'active' : 'idle', pinned: !archived && element.pinned === true, color: mark, animated: turn === 'unseen' && env.animations() });
   item.contextValue = archived ? 'archivedSession' : element.pinned === true ? (active ? 'pinnedActiveSession' : 'pinnedSession') : active ? 'activeSession' : 'session';
   item.description = sessionDescription(state, element, new Date(), withGroup, agents);
   if (!archived) { item.command = { command: 'sessionGroups.openSession', title: 'Open Session', arguments: [element] }; }
