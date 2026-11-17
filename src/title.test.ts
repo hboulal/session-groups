@@ -38,6 +38,13 @@ describe('lastTurn', () => {
     expect(lastTurn([assistant('end_turn'), user('This session is being continued', { isCompactSummary: true, isVisibleInTranscriptOnly: true })].join('\n'))).toBe('done');
     expect(lastTurn([user('summary', { isCompactSummary: true }), assistant('tool_use')].join('\n'))).toBe('working');
   });
+
+  it('skips a harness notification: a task notification after end_turn leaves the turn done', () => {
+    const notification = user('<task-notification>\n<task-id>x</task-id>\n<status>completed</status>\n</task-notification>');
+    expect(lastTurn([user('hi'), assistant('end_turn'), notification].join('\n'))).toBe('done');
+    expect(lastTurn([assistant('end_turn'), user('do this next')].join('\n'))).toBe('working');
+    expect(lastTurn([assistant('end_turn'), notification, assistant('tool_use')].join('\n'))).toBe('working');
+  });
 });
 
 describe('lastCwd', () => {

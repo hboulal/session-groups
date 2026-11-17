@@ -16,7 +16,7 @@ export function lastCustomTitle(text: string): string | undefined {
 }
 
 // Whose turn it is in a Claude transcript: 'working' while Claude answers or runs tools, 'done' once its last answer ended
-// the turn, the user interrupted it or the conversation was compacted; undefined before the first prompt. Subagent (sidechain) entries are skipped.
+// the turn, the user interrupted it or the conversation was compacted; undefined before the first prompt. Subagent (sidechain) entries and harness notifications are skipped.
 export type Turn = 'working' | 'done';
 export function lastTurn(text: string): Turn | undefined {
   let turn: Turn | undefined;
@@ -28,7 +28,12 @@ export function lastTurn(text: string): Turn | undefined {
       // A compaction summary is written as a user entry; Claude then waits for you unless it carries on, which adds an assistant entry.
       if (entry.isCompactSummary === true) { turn = 'done'; continue; }
       if (entry.type === 'assistant') { turn = entry.message?.stop_reason === 'end_turn' ? 'done' : 'working'; }
-      else if (entry.type === 'user') { turn = JSON.stringify(entry.message?.content ?? '').includes('[Request interrupted') ? 'done' : 'working'; }
+      else if (entry.type === 'user') {
+        // A harness notification (a background task finished) is written as a user entry; Claude works on it only if an assistant entry follows.
+        const content = entry.message?.content;
+        if (typeof content === 'string' && content.trimStart().startsWith('<task-notification>')) { continue; }
+        turn = JSON.stringify(entry.message?.content ?? '').includes('[Request interrupted') ? 'done' : 'working';
+      }
     } catch { /* a line cut by the tail read */ }
   }
   return turn;
