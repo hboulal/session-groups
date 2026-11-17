@@ -351,6 +351,10 @@ export function activate(context: vscode.ExtensionContext): void {
       if (isSession(arg)) { await attempt(() => store.setPinned(arg.id, false)); }
     }),
 
+    register('pinActiveSessions', async () => {
+      await attempt(() => store.pinAll(store.read().sessions.filter(s => s.archived !== true && terminals.isOpen(s.id)).map(s => s.id)));
+    }),
+
     register('clearArchived', async () => {
       const count = store.read().sessions.filter(s => s.archived === true).length;
       if (count === 0) { void vscode.window.showInformationMessage('Nothing is archived.'); return; }

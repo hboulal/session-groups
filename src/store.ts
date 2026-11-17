@@ -100,6 +100,14 @@ export class Store {
       : undefined);
   }
 
+  // Pins every listed non-archived session in one write.
+  pinAll(ids: readonly string[]): Promise<void> {
+    const pins = (x: Session): boolean => ids.includes(x.id) && x.archived !== true && x.pinned !== true;
+    return this.write(s => s.sessions.some(pins)
+      ? { state: { ...s, sessions: s.sessions.map(x => pins(x) ? { ...x, pinned: true } : x) }, result: undefined }
+      : undefined);
+  }
+
   // Removes every archived session from the list and returns them.
   deleteArchived(): Promise<Session[]> {
     return this.write(s => s.sessions.some(x => x.archived === true)

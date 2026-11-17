@@ -4,8 +4,9 @@ import { Group, Session } from './model';
 
 class FakeMemento implements Memento {
   data = new Map<string, unknown>();
+  updates = 0;
   get<T>(key: string): T | undefined { return this.data.get(key) as T | undefined; }
-  async update(key: string, value: unknown): Promise<void> { await Promise.resolve(); this.data.set(key, value); }
+  async update(key: string, value: unknown): Promise<void> { this.updates++; await Promise.resolve(); this.data.set(key, value); }
 }
 
 const group = (id: string, name = id): Group => ({ id, name, before: '', shellPath: '' });
@@ -149,6 +150,31 @@ describe('Store', () => {
     expect(s.read().sessions[0]).toMatchObject({ pinned: true, archived: true });
     await s.setPinned('s1', false);
     expect(s.read().sessions[0]!.pinned).toBe(false);
+  });
+
+  it('pins every listed session in one write and skips archived ones', async () => {
+    const m = new FakeMemento();
+    const s = new Store(m);
+    await s.addSession(session('a', 'g1'));
+    await s.addSession({ ...session('b', 'g1'), pinned: true });
+    await s.addSession({ ...session('c', 'g1'), archived: true });
+    const before = m.updates;
+    await s.pinAll(['a', 'b', 'c', 'missing']);
+    expect(s.read().sessions.find(x => x.id === 'a')?.pinned).toBe(true);
+    expect(s.read().sessions.find(x => x.id === 'c')?.pinned).toBeUndefined();
+    expect(m.updates - before).toBe(1);
+  });
+
+  it('writes nothing when no listed session changes', async () => {
+    const m = new FakeMemento();
+    const s = new Store(m);
+    await s.addSession(session('a', 'g1'));
+    await s.addSession({ ...session('b', 'g1'), pinned: true });
+    await s.addSession({ ...session('c', 'g1'), archived: true });
+    const before = m.updates;
+    await s.pinAll([]);
+    await s.pinAll(['b']);
+    expect(m.updates).toBe(before);
   });
 
   it('drops a session whose pinned field is not a boolean', () => {

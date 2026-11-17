@@ -163,6 +163,11 @@
         "icon": "$(pinned)"
       },
       {
+        "command": "sessionGroups.pinActiveSessions",
+        "title": "Pin Active Sessions",
+        "category": "Session Groups"
+      },
+      {
         "command": "sessionGroups.search",
         "title": "Search Sessions",
         "category": "Session Groups",
@@ -359,6 +364,10 @@
           "when": "false"
         },
         {
+          "command": "sessionGroups.pinActiveSessions",
+          "when": "false"
+        },
+        {
           "command": "sessionGroups.clearArchived",
           "when": "false"
         },
@@ -427,6 +436,11 @@
           "command": "sessionGroups.showGroups",
           "when": "view == sessionGroups.groups && sessionGroups.flat",
           "group": "navigation@4"
+        },
+        {
+          "command": "sessionGroups.pinActiveSessions",
+          "when": "view == sessionGroups.groups",
+          "group": "2_view@3"
         },
         {
           "command": "sessionGroups.showArchivedByGroup",
