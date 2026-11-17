@@ -152,6 +152,15 @@ describe('Store', () => {
     expect(s.read().sessions[0]!.pinned).toBe(false);
   });
 
+  it('keeps an unpinned session where it was shown, first of the unpinned', async () => {
+    const m = new FakeMemento();
+    m.data.set(STATE_KEY, { version: 1, groups: [group('g1')], sessions: [session('a', 'g1'), { ...session('b', 'g1'), pinned: true }, session('c', 'g1')] });
+    const s = new Store(m);
+    await s.setPinned('b', false);
+    expect(s.read().sessions.map(x => x.id)).toEqual(['b', 'a', 'c']);
+    expect(s.read().sessions.find(x => x.id === 'b')?.pinned).toBe(false);
+  });
+
   it('pins every listed session in one write and skips archived ones', async () => {
     const m = new FakeMemento();
     const s = new Store(m);
@@ -192,6 +201,15 @@ describe('Store', () => {
     expect(s.read().sessions.find(x => x.id === 'b')?.pinned).toBe(false);
     expect(s.read().sessions.find(x => x.id === 'c')?.pinned).toBe(true);
     expect(m.updates - before).toBe(1);
+  });
+
+  it('keeps the shown order when unpinning every session', async () => {
+    const m = new FakeMemento();
+    m.data.set(STATE_KEY, { version: 1, groups: [group('g1')], sessions: [session('a', 'g1'), { ...session('b', 'g1'), pinned: true }, { ...session('c', 'g1'), pinned: true }] });
+    const s = new Store(m);
+    await s.unpinAll();
+    expect(s.read().sessions.map(x => x.id)).toEqual(['b', 'c', 'a']);
+    expect(s.read().sessions.some(x => x.pinned === true)).toBe(false);
   });
 
   it('writes nothing when no session is pinned', async () => {

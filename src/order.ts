@@ -1,3 +1,4 @@
+import type { Session } from './model';
 import type { State } from './store';
 
 export interface Ref { kind: 'group' | 'session'; id: string }
@@ -39,4 +40,17 @@ function moveSession(state: State, id: string, target: Ref | undefined): State |
   const last = rest.map(x => x.groupId).lastIndexOf(groupId);
   const at = target && last >= 0 ? last + 1 : rest.length;
   return { ...state, sessions: [...rest.slice(0, at), { ...moving, groupId }, ...rest.slice(at)] };
+}
+
+// The sessions with each listed group's non-archived sessions reordered pinned first, inside the positions they already hold.
+// Each band keeps its order; other lists and archived sessions keep their positions.
+export function settleBands(sessions: readonly Session[], groupIds: ReadonlySet<string>): Session[] {
+  const next = [...sessions];
+  for (const groupId of groupIds) {
+    const slots = sessions.flatMap((x, i) => x.groupId === groupId && x.archived !== true ? [i] : []);
+    const listed = slots.map(i => sessions[i]!);
+    const settled = [...listed.filter(x => x.pinned === true), ...listed.filter(x => x.pinned !== true)];
+    slots.forEach((i, k) => { next[i] = settled[k]!; });
+  }
+  return next;
 }

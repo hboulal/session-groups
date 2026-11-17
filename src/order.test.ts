@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { moveEntry } from './order';
+import { moveEntry, settleBands } from './order';
 import type { Group, Session } from './model';
 import type { State } from './store';
 
@@ -116,5 +116,25 @@ describe('moveEntry sessions', () => {
     expect(moveEntry(pins, s('s1'), g('g2'))?.sessions.find(x => x.id === 's1')).toMatchObject({ pinned: true, groupId: 'g2' });
     expect(sessionIds(moveEntry(pins, s('s1'), g('g2')))).toEqual(['s2', 's3', 's1']);
     expect(moveEntry(pins, s('s1'), undefined)?.sessions.find(x => x.id === 's1')).toMatchObject({ pinned: true, groupId: '' });
+  });
+});
+
+describe('settleBands', () => {
+  const at = (id: string, groupId: string, flags: { pinned?: boolean; archived?: boolean } = {}): Session => ({ ...session(id, groupId), ...flags });
+  const ids = (x: Session[]) => x.map(y => y.id);
+
+  it('puts the pinned sessions of a list first in its own slots and leaves other lists alone', () => {
+    const sessions = [at('a', 'g1'), at('x', 'g2'), at('b', 'g1', { pinned: true }), at('y', 'g2', { pinned: true }), at('c', 'g1')];
+    expect(ids(settleBands(sessions, new Set(['g1'])))).toEqual(['b', 'x', 'a', 'y', 'c']);
+    expect(ids(sessions)).toEqual(['a', 'x', 'b', 'y', 'c']);
+  });
+
+  it('keeps the band order stable and skips archived sessions', () => {
+    const sessions = [at('a', 'g1', { pinned: true }), at('z', 'g1', { archived: true, pinned: true }), at('b', 'g1', { pinned: true }), at('c', 'g1')];
+    expect(ids(settleBands(sessions, new Set(['g1'])))).toEqual(['a', 'z', 'b', 'c']);
+  });
+
+  it('returns the same order when nothing is pinned', () => {
+    expect(ids(settleBands([at('a', 'g1'), at('b', 'g1')], new Set(['g1'])))).toEqual(['a', 'b']);
   });
 });

@@ -1,5 +1,5 @@
 import { Group, Session } from './model';
-import { moveEntry, type Ref } from './order';
+import { moveEntry, settleBands, type Ref } from './order';
 
 export interface Memento { get<T>(key: string): T | undefined; update(key: string, value: unknown): PromiseLike<void> }
 export interface State { version: 1; groups: Group[]; sessions: Session[] }
@@ -94,10 +94,14 @@ export class Store {
       : undefined);
   }
 
+  // Unpinning first makes the list's stored order the shown one, pinned first, so the row does not move.
   setPinned(id: string, pinned: boolean): Promise<void> {
-    return this.write(s => s.sessions.some(x => x.id === id)
-      ? { state: { ...s, sessions: s.sessions.map(x => x.id === id ? { ...x, pinned } : x) }, result: undefined }
-      : undefined);
+    return this.write(s => {
+      const session = s.sessions.find(x => x.id === id);
+      if (!session) { return undefined; }
+      const sessions = pinned ? s.sessions : settleBands(s.sessions, new Set([session.groupId]));
+      return { state: { ...s, sessions: sessions.map(x => x.id === id ? { ...x, pinned } : x) }, result: undefined };
+    });
   }
 
   // Pins every listed non-archived session in one write.
@@ -108,11 +112,11 @@ export class Store {
       : undefined);
   }
 
-  // Unpins every non-archived pinned session in one write; archived sessions keep their pin.
+  // Unpins every non-archived pinned session in one write, keeping the shown order; archived sessions keep their pin.
   unpinAll(): Promise<void> {
     const unpins = (x: Session): boolean => x.pinned === true && x.archived !== true;
     return this.write(s => s.sessions.some(unpins)
-      ? { state: { ...s, sessions: s.sessions.map(x => unpins(x) ? { ...x, pinned: false } : x) }, result: undefined }
+      ? { state: { ...s, sessions: settleBands(s.sessions, new Set(s.sessions.filter(unpins).map(x => x.groupId))).map(x => unpins(x) ? { ...x, pinned: false } : x) }, result: undefined }
       : undefined);
   }
 
