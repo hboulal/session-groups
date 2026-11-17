@@ -2,7 +2,7 @@
 // `idPattern`: a regular expression an id typed by hand must match; without one, any id without spaces is taken.
 export interface Agent { id: string; name: string; start: string; resume: string; idPrefix?: string; idPattern?: string }
 export interface Group { id: string; name: string; before: string; shellPath: string; color?: string; folder?: string; agentId?: string }
-export interface Session { id: string; groupId: string; name: string; before: string; shellPath: string; cwd: string; agentId: string; createdAt: string; archived?: boolean; agentTitle?: string }
+export interface Session { id: string; groupId: string; name: string; before: string; shellPath: string; cwd: string; agentId: string; createdAt: string; archived?: boolean; pinned?: boolean; agentTitle?: string }
 
 export const CLAUDE: Agent = { id: 'claude', name: 'Claude', start: 'claude --session-id {id}', resume: 'claude --resume {id}', idPattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' };
 export const OPENCODE: Agent = { id: 'opencode', name: 'OpenCode', start: 'opencode --session {id}', resume: 'opencode --session {id}', idPrefix: 'ses_', idPattern: '^ses\\S+$' };

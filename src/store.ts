@@ -29,7 +29,7 @@ export class Store {
   read(): State {
     const raw = this.memento.get<{ version?: unknown; groups?: unknown; sessions?: unknown }>(STATE_KEY);
     if (!raw || raw.version !== 1) { return { version: 1, groups: [], sessions: [] }; }
-    return { version: 1, groups: valid<Group>(raw.groups, GROUP_FIELDS), sessions: valid<Session>(raw.sessions, SESSION_FIELDS, ['archived']) };
+    return { version: 1, groups: valid<Group>(raw.groups, GROUP_FIELDS), sessions: valid<Session>(raw.sessions, SESSION_FIELDS, ['archived', 'pinned']) };
   }
 
   addGroup(group: Group): Promise<void> {
@@ -91,6 +91,12 @@ export class Store {
   setArchived(id: string, archived: boolean): Promise<void> {
     return this.write(s => s.sessions.some(x => x.id === id)
       ? { state: { ...s, sessions: s.sessions.map(x => x.id === id ? { ...x, archived } : x) }, result: undefined }
+      : undefined);
+  }
+
+  setPinned(id: string, pinned: boolean): Promise<void> {
+    return this.write(s => s.sessions.some(x => x.id === id)
+      ? { state: { ...s, sessions: s.sessions.map(x => x.id === id ? { ...x, pinned } : x) }, result: undefined }
       : undefined);
   }
 

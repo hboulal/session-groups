@@ -13,7 +13,7 @@ export function archivedChildren(state: State): Session[] {
   return state.sessions.filter(s => s.archived === true && (s.groupId === '' || state.groups.some(g => g.id === s.groupId)));
 }
 
-// Groups, then the ungrouped sessions, in stored order; archived sessions have their own view. With the active filter on, inactive sessions are hidden.
+// Groups, then the ungrouped sessions, pinned ones first and otherwise in stored order; archived sessions have their own view. With the active filter on, inactive sessions are hidden.
 // The Archived view by group: the groups that have archived sessions, then Ungrouped when an ungrouped one is archived.
 export function archivedRoot(state: State): (Group | UngroupedNode)[] {
   const archived = archivedChildren(state);
@@ -24,14 +24,19 @@ export function archivedOf(state: State, groupId: string): Session[] {
   return archivedChildren(state).filter(s => s.groupId === groupId);
 }
 
+// The pinned sessions, then the others, each in input order.
+export function pinnedFirst(sessions: readonly Session[]): Session[] {
+  return [...sessions.filter(s => s.pinned === true), ...sessions.filter(s => s.pinned !== true)];
+}
+
 export function rootChildren(state: State, isActive?: IsActive): (Group | Session)[] {
-  const ungrouped = state.sessions.filter(s => s.groupId === '' && s.archived !== true && (!isActive || isActive(s.id)));
+  const ungrouped = pinnedFirst(state.sessions.filter(s => s.groupId === '' && s.archived !== true && (!isActive || isActive(s.id))));
   return [...state.groups, ...ungrouped];
 }
 
-// Without group rows: every group's sessions in group order, then the ungrouped ones.
+// Without group rows: the pinned sessions from every group first, then the rest in group order, then the ungrouped ones.
 export function flatChildren(state: State, isActive?: IsActive): Session[] {
-  return rootChildren(state, isActive).flatMap(node => 'groupId' in node ? [node] : groupChildren(state, node.id, isActive));
+  return pinnedFirst(rootChildren(state, isActive).flatMap(node => 'groupId' in node ? [node] : groupChildren(state, node.id, isActive)));
 }
 
 // A session's label in the flat list: its group's name in front, unless its icon carries the group's colour.
@@ -61,7 +66,7 @@ export function ungroupedChildren(state: State, isActive?: IsActive): Session[] 
 }
 
 export function groupChildren(state: State, groupId: string, isActive?: IsActive): Session[] {
-  return state.sessions.filter(s => s.groupId === groupId && s.archived !== true && (!isActive || isActive(s.id)));
+  return pinnedFirst(state.sessions.filter(s => s.groupId === groupId && s.archived !== true && (!isActive || isActive(s.id))));
 }
 
 export function groupCount(state: State, groupId: string, isActive?: IsActive): number {

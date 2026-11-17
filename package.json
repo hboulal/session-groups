@@ -65,13 +65,23 @@
       },
       {
         "view": "sessionGroups.groups",
-        "when": "sessionGroups.flat && !sessionGroups.activeOnly",
+        "when": "sessionGroups.flat && !sessionGroups.activeOnly && !sessionGroups.pinnedOnly",
         "contents": "No sessions to show."
       },
       {
         "view": "sessionGroups.groups",
-        "when": "sessionGroups.flat && sessionGroups.activeOnly",
+        "when": "sessionGroups.flat && sessionGroups.activeOnly && !sessionGroups.pinnedOnly",
         "contents": "No session is running."
+      },
+      {
+        "view": "sessionGroups.groups",
+        "when": "sessionGroups.flat && sessionGroups.pinnedOnly && !sessionGroups.activeOnly",
+        "contents": "No session is pinned."
+      },
+      {
+        "view": "sessionGroups.groups",
+        "when": "sessionGroups.flat && sessionGroups.pinnedOnly && sessionGroups.activeOnly",
+        "contents": "No pinned session is running."
       },
       {
         "view": "sessionGroups.archived",
@@ -141,6 +151,18 @@
         "icon": "$(inbox)"
       },
       {
+        "command": "sessionGroups.pinSession",
+        "title": "Pin Session",
+        "category": "Session Groups",
+        "icon": "$(pin)"
+      },
+      {
+        "command": "sessionGroups.unpinSession",
+        "title": "Unpin Session",
+        "category": "Session Groups",
+        "icon": "$(pinned)"
+      },
+      {
         "command": "sessionGroups.search",
         "title": "Search Sessions",
         "category": "Session Groups",
@@ -157,6 +179,18 @@
         "title": "Show All Sessions",
         "category": "Session Groups",
         "icon": "$(clear-all)"
+      },
+      {
+        "command": "sessionGroups.showPinnedOnly",
+        "title": "Show Pinned Sessions Only",
+        "category": "Session Groups",
+        "icon": "$(pin)"
+      },
+      {
+        "command": "sessionGroups.showUnpinnedSessions",
+        "title": "Show Unpinned Sessions Too",
+        "category": "Session Groups",
+        "icon": "$(pinned)"
       },
       {
         "command": "sessionGroups.showFlat",
@@ -283,6 +317,14 @@
           "when": "false"
         },
         {
+          "command": "sessionGroups.showPinnedOnly",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.showUnpinnedSessions",
+          "when": "false"
+        },
+        {
           "command": "sessionGroups.showFlat",
           "when": "false"
         },
@@ -324,6 +366,14 @@
         },
         {
           "command": "sessionGroups.unarchiveSession",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.pinSession",
+          "when": "false"
+        },
+        {
+          "command": "sessionGroups.unpinSession",
           "when": "false"
         },
         {
@@ -377,14 +427,24 @@
           "group": "navigation@2"
         },
         {
+          "command": "sessionGroups.showPinnedOnly",
+          "when": "view == sessionGroups.groups && !sessionGroups.pinnedOnly",
+          "group": "navigation@3"
+        },
+        {
+          "command": "sessionGroups.showUnpinnedSessions",
+          "when": "view == sessionGroups.groups && sessionGroups.pinnedOnly",
+          "group": "navigation@3"
+        },
+        {
           "command": "sessionGroups.showFlat",
           "when": "view == sessionGroups.groups && !sessionGroups.flat",
-          "group": "navigation@3"
+          "group": "navigation@4"
         },
         {
           "command": "sessionGroups.showGroups",
           "when": "view == sessionGroups.groups && sessionGroups.flat",
-          "group": "navigation@3"
+          "group": "navigation@4"
         },
         {
           "command": "sessionGroups.hideColors",
@@ -444,43 +504,63 @@
           "group": "9_delete@2"
         },
         {
-          "command": "sessionGroups.archiveSession",
+          "command": "sessionGroups.pinSession",
           "when": "view == sessionGroups.groups && viewItem =~ /^(session|activeSession)$/",
+          "group": "inline@0"
+        },
+        {
+          "command": "sessionGroups.unpinSession",
+          "when": "view == sessionGroups.groups && viewItem =~ /^(pinnedSession|pinnedActiveSession)$/",
+          "group": "inline@0"
+        },
+        {
+          "command": "sessionGroups.archiveSession",
+          "when": "view == sessionGroups.groups && viewItem =~ /^(session|activeSession|pinnedSession|pinnedActiveSession)$/",
           "group": "inline@2"
         },
         {
           "command": "sessionGroups.renameSession",
-          "when": "view == sessionGroups.groups && viewItem =~ /^(session|activeSession)$/",
+          "when": "view == sessionGroups.groups && viewItem =~ /^(session|activeSession|pinnedSession|pinnedActiveSession)$/",
           "group": "inline@1"
         },
         {
           "command": "sessionGroups.openSession",
-          "when": "view == sessionGroups.groups && viewItem =~ /^(session|activeSession)$/",
+          "when": "view == sessionGroups.groups && viewItem =~ /^(session|activeSession|pinnedSession|pinnedActiveSession)$/",
           "group": "0_open@1"
         },
         {
           "command": "sessionGroups.closeTerminal",
-          "when": "view == sessionGroups.groups && viewItem == activeSession",
+          "when": "view == sessionGroups.groups && viewItem =~ /^(activeSession|pinnedActiveSession)$/",
           "group": "0_open@2"
         },
         {
-          "command": "sessionGroups.renameSession",
+          "command": "sessionGroups.pinSession",
           "when": "view == sessionGroups.groups && viewItem =~ /^(session|activeSession)$/",
+          "group": "1_modify@0"
+        },
+        {
+          "command": "sessionGroups.unpinSession",
+          "when": "view == sessionGroups.groups && viewItem =~ /^(pinnedSession|pinnedActiveSession)$/",
+          "group": "1_modify@0"
+        },
+        {
+          "command": "sessionGroups.renameSession",
+          "when": "view == sessionGroups.groups && viewItem =~ /^(session|activeSession|pinnedSession|pinnedActiveSession)$/",
           "group": "1_modify@1"
         },
         {
           "command": "sessionGroups.archiveSession",
-          "when": "view == sessionGroups.groups && viewItem =~ /^(session|activeSession)$/",
+          "when": "view == sessionGroups.groups && viewItem =~ /^(session|activeSession|pinnedSession|pinnedActiveSession)$/",
           "group": "1_modify@2"
         },
         {
           "command": "sessionGroups.editSessionId",
-          "when": "view == sessionGroups.groups && viewItem == session",
+          "when": "view == sessionGroups.groups && viewItem =~ /^(session|pinnedSession)$/",
           "group": "1_modify@3"
         },
         {
           "command": "sessionGroups.deleteSession",
-          "when": "view == sessionGroups.groups && viewItem =~ /^(session|activeSession)$/",
+          "when": "view == sessionGroups.groups && viewItem =~ /^(session|activeSession|pinnedSession|pinnedActiveSession)$/",
           "group": "9_delete"
         },
         {

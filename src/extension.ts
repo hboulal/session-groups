@@ -192,6 +192,12 @@ export function activate(context: vscode.ExtensionContext): void {
   };
   setActiveOnly(false);
 
+  const setPinnedOnly = (on: boolean): void => {
+    tree.setPinnedOnly(on);
+    void vscode.commands.executeCommand('setContext', 'sessionGroups.pinnedOnly', on);
+  };
+  setPinnedOnly(false);
+
   const FLAT_KEY = 'sessionGroups.flat';
   const isFlat = (): boolean => context.globalState.get<boolean>(FLAT_KEY, false);
   const setFlat = async (on: boolean): Promise<void> => {
@@ -329,6 +335,10 @@ export function activate(context: vscode.ExtensionContext): void {
 
     register('showAllSessions', () => { setActiveOnly(false); }),
 
+    register('showPinnedOnly', () => { setPinnedOnly(true); }),
+
+    register('showUnpinnedSessions', () => { setPinnedOnly(false); }),
+
     register('showArchivedByGroup', () => setArchivedByGroup(true)),
 
     register('showArchivedFlat', () => setArchivedByGroup(false)),
@@ -347,6 +357,14 @@ export function activate(context: vscode.ExtensionContext): void {
         close = choice === 'Archive and Close';
       }
       if (await attempt(() => store.setArchived(arg.id, true)) && close) { terminals.close(arg.id); }
+    }),
+
+    register('pinSession', async arg => {
+      if (isSession(arg)) { await attempt(() => store.setPinned(arg.id, true)); }
+    }),
+
+    register('unpinSession', async arg => {
+      if (isSession(arg)) { await attempt(() => store.setPinned(arg.id, false)); }
     }),
 
     register('clearArchived', async () => {

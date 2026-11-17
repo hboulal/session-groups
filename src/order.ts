@@ -5,6 +5,7 @@ export interface Ref { kind: 'group' | 'session'; id: string }
 const layout = (s: State) => JSON.stringify([s.groups.map(g => g.id), s.sessions.map(x => [x.id, x.groupId])]);
 
 // The state after dropping `dragged` on `target` (undefined = empty space), or undefined when nothing changes or the move is not allowed.
+// A drop across the pinned and unpinned bands is refused.
 export function moveEntry(state: State, dragged: Ref, target: Ref | undefined): State | undefined {
   if (target?.kind === 'session' && state.sessions.find(x => x.id === target.id)?.archived === true) { return undefined; }
   const next = dragged.kind === 'group' ? moveGroup(state, dragged.id, target) : moveSession(state, dragged.id, target);
@@ -29,6 +30,7 @@ function moveSession(state: State, id: string, target: Ref | undefined): State |
   if (target?.kind === 'session') {
     const before = rest.find(x => x.id === target.id);
     if (!before || before.archived === true) { return undefined; }
+    if ((before.pinned === true) !== (moving.pinned === true)) { return undefined; }
     const at = rest.indexOf(before);
     return { ...state, sessions: [...rest.slice(0, at), { ...moving, groupId: before.groupId }, ...rest.slice(at)] };
   }

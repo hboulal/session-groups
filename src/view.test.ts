@@ -4,7 +4,7 @@ import { CLAUDE, OPENCODE, type Group, type Session } from './model';
 import type { State } from './store';
 
 const group = (id: string, name: string): Group => ({ id, name, before: '', shellPath: '' });
-const session = (id: string, groupId: string, createdAt: string, archived?: boolean): Session => ({ id, groupId, name: id, before: '', shellPath: '', cwd: '/w', agentId: 'claude', createdAt, ...(archived === undefined ? {} : { archived }) });
+const session = (id: string, groupId: string, createdAt: string, archived?: boolean, pinned?: boolean): Session => ({ id, groupId, name: id, before: '', shellPath: '', cwd: '/w', agentId: 'claude', createdAt, ...(archived === undefined ? {} : { archived }), ...(pinned === undefined ? {} : { pinned }) });
 
 describe('flatChildren and flatLabel', () => {
   it('lists sessions by group order without group rows, and prefixes the group name', () => {
@@ -228,5 +228,30 @@ describe('activeCount', () => {
 
   it('is zero when nothing is active', () => {
     expect(activeCount(state, () => false)).toBe(0);
+  });
+});
+
+describe('pinned sessions come first', () => {
+  const state: State = {
+    version: 1,
+    groups: [group('g1', 'api'), group('g2', 'web')],
+    sessions: [
+      session('a', 'g1', '2026-10-01T00:00:00Z'), session('b', 'g1', '2026-10-01T00:00:00Z', false, true),
+      session('c', 'g2', '2026-10-01T00:00:00Z', false, true), session('d', 'g2', '2026-10-01T00:00:00Z'),
+      session('u1', '', '2026-10-01T00:00:00Z'), session('u2', '', '2026-10-01T00:00:00Z', false, true),
+      session('z', 'g1', '2026-10-01T00:00:00Z', true, true),
+    ],
+  };
+
+  it('in a group, under Ungrouped, in the flat list and in search, each band in stored order', () => {
+    expect(groupChildren(state, 'g1').map(s => s.id)).toEqual(['b', 'a']);
+    expect(ungroupedChildren(state).map(s => s.id)).toEqual(['u2', 'u1']);
+    expect(flatChildren(state).map(s => s.id)).toEqual(['b', 'c', 'u2', 'a', 'd', 'u1']);
+    expect(searchItems(state, new Date(), [CLAUDE]).map(sec => sec.items.map(i => i.id))).toEqual([['b', 'a'], ['c', 'd'], ['u2', 'u1']]);
+  });
+
+  it('a combined filter shows the pinned sessions that pass it', () => {
+    const pinnedAndRunning = (id: string) => state.sessions.find(s => s.id === id)?.pinned === true && id !== 'c';
+    expect(flatChildren(state, pinnedAndRunning).map(s => s.id)).toEqual(['b', 'u2']);
   });
 });

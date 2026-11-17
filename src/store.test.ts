@@ -140,6 +140,23 @@ describe('Store', () => {
     expect(n).toBe(1);
   });
 
+  it('pins and unpins a session, and keeps the pin through archive', async () => {
+    const s = new Store(new FakeMemento());
+    await s.addSession(session('s1', 'g1'));
+    await s.setPinned('s1', true);
+    expect(s.read().sessions[0]!.pinned).toBe(true);
+    await s.setArchived('s1', true);
+    expect(s.read().sessions[0]).toMatchObject({ pinned: true, archived: true });
+    await s.setPinned('s1', false);
+    expect(s.read().sessions[0]!.pinned).toBe(false);
+  });
+
+  it('drops a session whose pinned field is not a boolean', () => {
+    const m = new FakeMemento();
+    m.data.set(STATE_KEY, { version: 1, groups: [], sessions: [session('s1', 'g1'), { ...session('s2', 'g1'), pinned: 'yes' }] });
+    expect(new Store(m).read().sessions.map(x => x.id)).toEqual(['s1']);
+  });
+
   it('archives and unarchives a session, ignoring unknown ids', async () => {
     const m = new FakeMemento();
     const s = new Store(m);

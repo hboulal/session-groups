@@ -12,6 +12,7 @@ export class GroupsTree implements vscode.TreeDataProvider<TreeNode>, vscode.Dis
   readonly onDidChangeTreeData = this.changed.event;
   private readonly subscriptions: { dispose(): void }[];
   private activeOnly = false;
+  private pinnedOnly = false;
   private flat = false;
   private colors = true;
 
@@ -21,6 +22,11 @@ export class GroupsTree implements vscode.TreeDataProvider<TreeNode>, vscode.Dis
 
   setActiveOnly(on: boolean): void {
     this.activeOnly = on;
+    this.changed.fire();
+  }
+
+  setPinnedOnly(on: boolean): void {
+    this.pinnedOnly = on;
     this.changed.fire();
   }
 
@@ -39,7 +45,9 @@ export class GroupsTree implements vscode.TreeDataProvider<TreeNode>, vscode.Dis
   }
 
   private filter(): IsActive | undefined {
-    return this.activeOnly ? id => this.terminals.isOpen(id) : undefined;
+    if (!this.activeOnly && !this.pinnedOnly) { return undefined; }
+    const pinned = new Set(this.store.read().sessions.filter(s => s.pinned === true).map(s => s.id));
+    return id => (!this.activeOnly || this.terminals.isOpen(id)) && (!this.pinnedOnly || pinned.has(id));
   }
 
   getChildren(element?: TreeNode): TreeNode[] {
@@ -80,7 +88,8 @@ export class GroupsTree implements vscode.TreeDataProvider<TreeNode>, vscode.Dis
     const group = state.groups.find(g => g.id === element.groupId);
     const color = group && this.colors ? groupColor(state, group) : undefined;
     const mark = color && canMark(color) ? color : undefined;
-    const label = this.flat ? flatLabel(state, element, mark !== undefined) : element.name;
+    const name = this.flat ? flatLabel(state, element, mark !== undefined) : element.name;
+    const label = element.pinned === true ? `★ ${name}` : name;
     return sessionItem(state, element, label, this.terminals, this.agents(), this.env, false, false, mark);
   }
 
@@ -225,7 +234,7 @@ function sessionItem(state: State, element: Session, label: string, terminals: T
   item.iconPath = turn === 'working' ? new vscode.ThemeIcon('loading~spin')
     : mark ? env.markedIcon(turn === 'unseen' ? 'unseen' : active ? 'active' : 'idle', mark)
       : turn === 'unseen' ? env.unseenIcon : active ? env.activeIcon : new vscode.ThemeIcon(archived ? 'archive' : 'history');
-  item.contextValue = archived ? 'archivedSession' : active ? 'activeSession' : 'session';
+  item.contextValue = archived ? 'archivedSession' : element.pinned === true ? (active ? 'pinnedActiveSession' : 'pinnedSession') : active ? 'activeSession' : 'session';
   item.description = sessionDescription(state, element, new Date(), withGroup, agents);
   if (!archived) { item.command = { command: 'sessionGroups.openSession', title: 'Open Session', arguments: [element] }; }
   return item;
