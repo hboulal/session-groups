@@ -16,6 +16,7 @@ Session Groups is a VS Code side panel for terminal coding agents such as Claude
   - it spins while the agent works;
   - it is green when it is your turn;
   - it gets a yellow dot when the agent finished while you were looking elsewhere, with a notification that offers to open it.
+- **Pin.** A pinned session shows a star and stays at the top of its group, or of the list without groups; the pin button in the view title shows pinned sessions only.
 - **Follows your terminals.** Picking a session's terminal selects its row in the panel.
 - **Counts at a glance.** Each group shows how many sessions it has and how many are running (`5 · 2 active`). The view title and the activity-bar badge show the total running.
 - **Names follow the agent.** Terminal tabs show the title Claude Code sets, and `/rename` inside Claude also renames the session in the panel.
@@ -36,11 +37,12 @@ Nothing is deleted from the agents themselves: removing or archiving a session o
   - Delete Group moves its sessions to Ungrouped.
   - Delete Group and Sessions removes them too, after a confirmation.
 - **Group colours:** each session's icon carries a small square in its group's colour.
-- **Session actions:** inline Rename and Archive buttons; right-click for Open, Close Terminal, Edit Session ID and Delete.
+- **Session actions:** inline Pin (or Unpin), Rename and Archive buttons; right-click for Open, Pin or Unpin, Close Terminal, Edit Session ID and Delete.
 - **Keys:** F2 renames the selected row. Delete archives the selected session in Groups, and deletes it from Archived after a confirmation.
 - **View title buttons:**
   - search;
   - show only running sessions (lightning);
+  - show only pinned sessions (pin);
   - show sessions without groups (labelled `group/session` when colours are hidden);
   - in the "…" menu, Hide Group Colors.
 - **Drag and drop** reorders groups and sessions, and moves sessions between groups, while groups are shown.
@@ -75,7 +77,7 @@ Agents such as Codex, which pick their own session id at start, are not supporte
 | Setting | Default | What it does |
 |---|---|---|
 | `sessionGroups.defaultFolder` | empty | Folder that sessions without a group start in, and the folder a new group starts from |
-| `sessionGroups.defaultAgent` | `claude` | Agent for sessions without a group and for groups with none chosen |
+| `sessionGroups.defaultAgent` | `claude` | Agent for sessions without a group and for groups with none chosen; a dropdown of the built-in agents, a custom agent's id is typed in settings.json |
 | `sessionGroups.agents` | `[]` | Extra agents, or replacements for built-in ones (same `id`) |
 | `sessionGroups.notifyWhenFinished` | `true` | Notify when a Claude Code or OpenCode session finishes while its terminal is not in front |
 

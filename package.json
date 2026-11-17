@@ -611,7 +611,9 @@
         "sessionGroups.defaultAgent": {
           "type": "string",
           "default": "claude",
-          "description": "Agent a new session starts when its group has none chosen, and for sessions without a group: the id of a built-in agent (claude, opencode, copilot, gemini, qwen, goose) or of one in sessionGroups.agents."
+          "enum": ["claude", "opencode", "copilot", "gemini", "qwen", "goose"],
+          "enumItemLabels": ["Claude Code", "OpenCode", "GitHub Copilot CLI", "Gemini CLI", "Qwen Code", "Goose"],
+          "description": "Agent a new session starts when its group has none chosen, and for sessions without a group. An agent added in sessionGroups.agents is chosen by typing its id in settings.json."
         },
         "sessionGroups.agents": {
           "type": "array",
