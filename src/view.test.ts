@@ -248,10 +248,10 @@ describe('pinned sessions come first', () => {
     expect(ungroupedChildren(state).map(s => s.id)).toEqual(['u2', 'u1']);
     expect(flatChildren(state).map(s => s.id)).toEqual(['b', 'c', 'u2', 'a', 'd', 'u1']);
     expect(searchItems(state, new Date(), [CLAUDE]).map(sec => sec.items.map(i => i.id))).toEqual([['b', 'a'], ['c', 'd'], ['u2', 'u1']]);
+    expect(searchItems(state, new Date(), [CLAUDE])[0]?.items.map(i => i.label)).toEqual(['★ b', 'a']);
   });
 
-  it('a combined filter shows the pinned sessions that pass it', () => {
-    const pinnedAndRunning = (id: string) => state.sessions.find(s => s.id === id)?.pinned === true && id !== 'c';
-    expect(flatChildren(state, pinnedAndRunning).map(s => s.id)).toEqual(['b', 'u2']);
+  it('a filter keeps the pinned sessions that pass it first', () => {
+    expect(flatChildren(state, (id: string) => id !== 'c').map(s => s.id)).toEqual(['b', 'u2', 'a', 'd', 'u1']);
   });
 });

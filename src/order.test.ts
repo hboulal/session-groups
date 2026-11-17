@@ -106,7 +106,7 @@ describe('moveEntry sessions', () => {
 
   it('refuses a drop on a session of the other band, allows one inside the band', () => {
     const pins = state(['g1', 'g2'], [{ ...session('s1', 'g1'), pinned: true }, session('s2', 'g1'), session('s3', 'g1')]);
-    expect(moveEntry(pins, s('s1'), s('s2'))).toBeUndefined();
+    expect(moveEntry(pins, s('s1'), s('s3'))).toBeUndefined();
     expect(moveEntry(pins, s('s2'), s('s1'))).toBeUndefined();
     expect(sessionIds(moveEntry(pins, s('s3'), s('s2')))).toEqual(['s1', 's3', 's2']);
   });
@@ -114,6 +114,7 @@ describe('moveEntry sessions', () => {
   it('keeps the pin when dropped on a group or on empty space', () => {
     const pins = state(['g1', 'g2'], [{ ...session('s1', 'g1'), pinned: true }, session('s2', 'g1'), session('s3', 'g1')]);
     expect(moveEntry(pins, s('s1'), g('g2'))?.sessions.find(x => x.id === 's1')).toMatchObject({ pinned: true, groupId: 'g2' });
+    expect(sessionIds(moveEntry(pins, s('s1'), g('g2')))).toEqual(['s2', 's3', 's1']);
     expect(moveEntry(pins, s('s1'), undefined)?.sessions.find(x => x.id === 's1')).toMatchObject({ pinned: true, groupId: '' });
   });
 });

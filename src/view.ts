@@ -5,7 +5,7 @@ import type { State } from './store';
 export interface UngroupedNode { kind: 'ungrouped' }
 export const UNGROUPED: UngroupedNode = { kind: 'ungrouped' };
 
-// True when the session's terminal is open; also used for counts and the active filter.
+// The tree's row filter: true when the session's terminal is open, when it is pinned, or both, as the toggles ask; also used for counts.
 export type IsActive = (sessionId: string) => boolean;
 
 // Archived sessions whose group exists or is '' (the others are hidden like any orphan), in stored order.
@@ -13,7 +13,6 @@ export function archivedChildren(state: State): Session[] {
   return state.sessions.filter(s => s.archived === true && (s.groupId === '' || state.groups.some(g => g.id === s.groupId)));
 }
 
-// Groups, then the ungrouped sessions, pinned ones first and otherwise in stored order; archived sessions have their own view. With the active filter on, inactive sessions are hidden.
 // The Archived view by group: the groups that have archived sessions, then Ungrouped when an ungrouped one is archived.
 export function archivedRoot(state: State): (Group | UngroupedNode)[] {
   const archived = archivedChildren(state);
@@ -29,12 +28,13 @@ export function pinnedFirst(sessions: readonly Session[]): Session[] {
   return [...sessions.filter(s => s.pinned === true), ...sessions.filter(s => s.pinned !== true)];
 }
 
+// Groups, then the ungrouped sessions, pinned ones first and otherwise in stored order; archived sessions have their own view. With the active filter on, inactive sessions are hidden.
 export function rootChildren(state: State, isActive?: IsActive): (Group | Session)[] {
   const ungrouped = pinnedFirst(state.sessions.filter(s => s.groupId === '' && s.archived !== true && (!isActive || isActive(s.id))));
   return [...state.groups, ...ungrouped];
 }
 
-// Without group rows: the pinned sessions from every group first, then the rest in group order, then the ungrouped ones.
+// Without group rows: every pinned session in tree order, then the others in tree order.
 export function flatChildren(state: State, isActive?: IsActive): Session[] {
   return pinnedFirst(rootChildren(state, isActive).flatMap(node => 'groupId' in node ? [node] : groupChildren(state, node.id, isActive)));
 }
@@ -82,11 +82,11 @@ export function groupDescription(state: State, groupId: string, isActive: IsActi
 export interface SearchItem { id: string; label: string; description: string }
 export interface SearchSection { label: string; items: SearchItem[] }
 
-// Non-empty sections in tree order, with openable sessions in stored order.
+// Non-empty sections in tree order, each with its openable sessions pinned first, then in stored order; a pinned one has a star before its name.
 export function searchItems(state: State, now: Date, agents: readonly Agent[]): SearchSection[] {
   return [...state.groups, { id: '', name: 'Ungrouped' }].map(g => ({
     label: g.name,
-    items: groupChildren(state, g.id).map(s => ({ id: s.id, label: s.name, description: sessionDescription(state, s, now, false, agents) })),
+    items: groupChildren(state, g.id).map(s => ({ id: s.id, label: s.pinned === true ? `★ ${s.name}` : s.name, description: sessionDescription(state, s, now, false, agents) })),
   })).filter(section => section.items.length > 0);
 }
 

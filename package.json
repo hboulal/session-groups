@@ -176,7 +176,7 @@
       },
       {
         "command": "sessionGroups.showAllSessions",
-        "title": "Show All Sessions",
+        "title": "Show Inactive Sessions Too",
         "category": "Session Groups",
         "icon": "$(clear-all)"
       },
@@ -611,8 +611,22 @@
         "sessionGroups.defaultAgent": {
           "type": "string",
           "default": "claude",
-          "enum": ["claude", "opencode", "copilot", "gemini", "qwen", "goose"],
-          "enumItemLabels": ["Claude Code", "OpenCode", "GitHub Copilot CLI", "Gemini CLI", "Qwen Code", "Goose"],
+          "enum": [
+            "claude",
+            "opencode",
+            "copilot",
+            "gemini",
+            "qwen",
+            "goose"
+          ],
+          "enumItemLabels": [
+            "Claude Code",
+            "OpenCode",
+            "GitHub Copilot CLI",
+            "Gemini CLI",
+            "Qwen Code",
+            "Goose"
+          ],
           "description": "Agent a new session starts when its group has none chosen, and for sessions without a group. An agent added in sessionGroups.agents is chosen by typing its id in settings.json."
         },
         "sessionGroups.agents": {
