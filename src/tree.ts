@@ -186,7 +186,7 @@ function groupTooltip(state: State, group: Group | undefined, terminals: Termina
 async function sessionTooltip(state: State, s: Session, terminals: Terminals, agents: readonly Agent[], hover: TreeEnv, archived: boolean): Promise<vscode.MarkdownString> {
   const tip = new vscode.MarkdownString();
   tip.appendMarkdown('**').appendText(s.name || 'unnamed').appendMarkdown('**\n\n');
-  tip.appendText(agents.find(a => a.id === s.agentId)?.name ?? s.agentId).appendMarkdown(` · ${archived ? 'archived' : stateText(terminals.isOpen(s.id), hover.turn(s.id))}\n\n`);
+  tip.appendText(agents.find(a => a.id === s.agentId)?.name ?? s.agentId).appendMarkdown(` · ${archived ? 'archived' : stateText(terminals.isOpen(s.id), hover.turn(s.id)) + (s.pinned ? ', pinned' : '')}\n\n`);
   tip.appendMarkdown(`Created ${dateTime(new Date(s.createdAt))}\n\n`);
   const last = await hover.lastActivity(s).catch(() => undefined);
   if (last) { tip.appendMarkdown(`Last active ${dateTime(last)}\n\n`); }

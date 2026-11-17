@@ -20,10 +20,10 @@ const CHART_HEX: Record<string, Record<IconTheme, string>> = {
 };
 const GREEN = { dark: '#89D185', light: '#388A34' };
 const GREY = { dark: '#C5C5C5', light: '#424242' };
-const YELLOW = { dark: '#CCA700', light: '#BF8803' };
+const UNSEEN_DOT = { dark: '#F14C4C', light: '#E51400' };
 const GOLD = { dark: '#E2B93B', light: '#BF8803' };
 const BG = { dark: '#181818', light: '#F3F3F3' };
-const PALE = { dark: '#FFF3B0', light: '#FFE38A' };
+const UNSEEN_DOT_BRIGHT = { dark: '#FFC9C9', light: '#FF9B9B' };
 
 const BOX = 'x="1.5" y="2.5" width="13" height="11" rx="1.5"';
 const CHEVRON = 'd="M3.5 6l2 2-2 2"';
@@ -38,7 +38,7 @@ const DOT = 'cx="13.5" cy="3.5" r="2.5"';
 
 // The cursor blinks twice and the dot brightens twice, then both stay as in the still icon.
 const BLINK = '<animate attributeName="opacity" values="1;0;0;1;1;0;0;1" keyTimes="0;0.01;0.25;0.26;0.5;0.51;0.75;0.76" dur="1s" calcMode="discrete" fill="freeze"/>';
-const brighten = (theme: IconTheme) => `<animate attributeName="fill" values="${YELLOW[theme]};${PALE[theme]};${YELLOW[theme]};${PALE[theme]};${YELLOW[theme]}" keyTimes="0;0.25;0.5;0.75;1" dur="0.6s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1" fill="freeze"/>`;
+const brighten = (theme: IconTheme) => `<animate attributeName="fill" values="${UNSEEN_DOT[theme]};${UNSEEN_DOT_BRIGHT[theme]};${UNSEEN_DOT[theme]};${UNSEEN_DOT_BRIGHT[theme]};${UNSEEN_DOT[theme]}" keyTimes="0;0.25;0.5;0.75;1" dur="0.6s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1" fill="freeze"/>`;
 
 const el = (tag: string, attrs: string, child = '') => child ? `<${tag} ${attrs}>${child}</${tag}>` : `<${tag} ${attrs}/>`;
 const filled = (fill: string) => `fill="${fill}" stroke="none"`;
@@ -61,7 +61,7 @@ export function iconSvg(spec: IconSpec, theme: IconTheme): string {
     ? (spec.pinned ? el('circle', `${DISC} ${filled(GOLD[theme])}`) : el('circle', CLOCK)) + el('path', HANDS)
     : (spec.pinned ? el('rect', `${BOX} ${filled(GOLD[theme])}`) : el('rect', BOX)) + el('path', CHEVRON) + el('path', UNDERSCORE, animated ? BLINK : '');
   const dot = spec.kind === 'unseen'
-    ? el('circle', `${DOT_RING} ${filled(BG[theme])}`) + el('circle', `${DOT} ${filled(YELLOW[theme])}`, animated ? brighten(theme) : '')
+    ? el('circle', `${DOT_RING} ${filled(BG[theme])}`) + el('circle', `${DOT} ${filled(UNSEEN_DOT[theme])}`, animated ? brighten(theme) : '')
     : '';
   const mark = spec.color
     ? el('rect', `${SQUARE_RING} ${filled(BG[theme])}`) + el('rect', `${SQUARE} ${filled(CHART_HEX[spec.color]![theme])}`)

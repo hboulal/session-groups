@@ -161,6 +161,7 @@ describe('Store', () => {
     const before = m.updates;
     await s.pinAll(['a', 'b', 'c', 'missing']);
     expect(s.read().sessions.find(x => x.id === 'a')?.pinned).toBe(true);
+    expect(s.read().sessions.find(x => x.id === 'b')?.pinned).toBe(true);
     expect(s.read().sessions.find(x => x.id === 'c')?.pinned).toBeUndefined();
     expect(m.updates - before).toBe(1);
   });
@@ -174,6 +175,7 @@ describe('Store', () => {
     const before = m.updates;
     await s.pinAll([]);
     await s.pinAll(['b']);
+    await s.pinAll(['c', 'missing']);
     expect(m.updates).toBe(before);
   });
 

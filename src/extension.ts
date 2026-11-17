@@ -46,9 +46,12 @@ export function activate(context: vscode.ExtensionContext): void {
   // Whose turn it is in each running Claude or OpenCode session, from the agent's own records; 'unseen' marks a finish not looked at yet.
   const turns = new Map<string, Turn>();
   const unseen = new Set<string>();
+  // A finish shows the animated icon for a moment; the timer swaps the still icon back.
+  const fresh = new Map<string, NodeJS.Timeout>();
+  let disposed = false;
   const hover: TreeEnv = {
     icon: spec => ({ light: vscode.Uri.joinPath(iconsDir, iconName(spec, 'light')), dark: vscode.Uri.joinPath(iconsDir, iconName(spec, 'dark')) }),
-    justFinished: () => false,
+    justFinished: id => fresh.has(id),
     turn: (id): SessionTurn | undefined => unseen.has(id) ? 'unseen' : turns.get(id),
     defaultFolder: () => defaultFolder(),
     agentFor: group => agentFor(group),
@@ -80,7 +83,14 @@ export function activate(context: vscode.ExtensionContext): void {
     const before = turns.get(s.id);
     if (turn === before) { return; }
     if (turn) { turns.set(s.id, turn); } else { turns.delete(s.id); }
-    if (before === 'working' && turn === 'done' && !inFront(s.id)) { unseen.add(s.id); notifyFinished(s); }
+    if (before === 'working' && turn === 'done' && !inFront(s.id)) {
+      unseen.add(s.id);
+      if (vscode.workspace.getConfiguration('workbench').get<string>('reduceMotion') !== 'on' && !disposed) {
+        clearTimeout(fresh.get(s.id));
+        fresh.set(s.id, setTimeout(() => { fresh.delete(s.id); tree.refresh(); archivedTree.refresh(); }, 1500));
+      }
+      notifyFinished(s);
+    }
     tree.refresh();
     archivedTree.refresh();
   };
@@ -116,7 +126,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const inFront = (id: string): boolean => vscode.window.state.focused && vscode.window.activeTerminal !== undefined && vscode.window.activeTerminal === terminals.terminalOf(id);
   const clearSeen = (): void => {
     let changed = false;
-    for (const id of [...unseen]) { if (inFront(id) || !terminals.isOpen(id)) { unseen.delete(id); changed = true; } }
+    for (const id of [...unseen]) { if (inFront(id) || !terminals.isOpen(id)) { unseen.delete(id); clearTimeout(fresh.get(id)); fresh.delete(id); changed = true; } }
     for (const id of [...turns.keys()]) { if (!terminals.isOpen(id)) { turns.delete(id); transcripts.delete(id); } }
     if (changed) { tree.refresh(); archivedTree.refresh(); }
   };
@@ -242,6 +252,7 @@ export function activate(context: vscode.ExtensionContext): void {
     terminals,
     tree,
     { dispose: () => { clearInterval(titleTimer); } },
+    { dispose() { disposed = true; for (const t of fresh.values()) { clearTimeout(t); } fresh.clear(); } },
     vscode.window.onDidChangeActiveTerminal(clearSeen),
     // Picking a session's terminal selects its row, but only while the panel is visible: revealing would open it.
     vscode.window.onDidChangeActiveTerminal(terminal => {

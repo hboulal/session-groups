@@ -15,7 +15,7 @@ Session Groups is a VS Code side panel for terminal coding agents such as Claude
 - **See what is running.** A session with an open terminal has a green terminal icon, or gold when pinned. For Claude Code and OpenCode the icon also shows whose turn it is:
   - it spins while the agent works;
   - it is green (gold when pinned) when it is your turn;
-  - it gets a yellow dot when the agent finished while you were looking elsewhere, with a notification that offers to open it.
+  - it gets a red dot, with a short blink of the icon, when the agent finished while you were looking elsewhere, with a notification that offers to open it.
 - **Pin.** A pinned session has a gold icon and stays at the top of its group, or of the list without groups; the pin button in the view title shows pinned sessions only.
 - **Follows your terminals.** Picking a session's terminal selects its row in the panel.
 - **Counts at a glance.** Each group shows how many sessions it has and how many are running (`5 · 2 active`). The view title and the activity-bar badge show the total running.

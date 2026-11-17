@@ -45,7 +45,7 @@ describe('session icons', () => {
     const ring = svg.indexOf('<rect x="10.55" y="10.55" width="5.4" height="5.4" rx="1.4" fill="#181818" stroke="none"/>');
     const square = svg.indexOf('<rect x="11.25" y="11.25" width="4.5" height="4.5" rx="1" fill="#F14C4C" stroke="none"/>');
     const dotRing = svg.indexOf('<circle cx="13.5" cy="3.5" r="3.2" fill="#181818" stroke="none"/>');
-    const dot = svg.indexOf('<circle cx="13.5" cy="3.5" r="2.5" fill="#CCA700" stroke="none"');
+    const dot = svg.indexOf('<circle cx="13.5" cy="3.5" r="2.5" fill="#F14C4C" stroke="none"');
     expect(svg.indexOf('d="M7.5 10h2.5"')).toBeLessThan(dotRing);
     expect(dotRing).toBeLessThan(dot);
     expect(dot).toBeLessThan(ring);
@@ -56,7 +56,7 @@ describe('session icons', () => {
   it('animates only the unseen twin: the cursor blinks twice and the dot brightens twice, then both freeze', () => {
     const svg = iconSvg({ kind: 'unseen', pinned: false, animated: true }, 'light');
     expect(svg).toContain('<animate attributeName="opacity" values="1;0;0;1;1;0;0;1" keyTimes="0;0.01;0.25;0.26;0.5;0.51;0.75;0.76" dur="1s" calcMode="discrete" fill="freeze"/>');
-    expect(svg).toContain('<animate attributeName="fill" values="#BF8803;#FFE38A;#BF8803;#FFE38A;#BF8803" keyTimes="0;0.25;0.5;0.75;1" dur="0.6s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1" fill="freeze"/>');
+    expect(svg).toContain('<animate attributeName="fill" values="#E51400;#FF9B9B;#E51400;#FF9B9B;#E51400" keyTimes="0;0.25;0.5;0.75;1" dur="0.6s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1" fill="freeze"/>');
     expect(iconSvg({ kind: 'active', pinned: false, animated: true }, 'light')).not.toContain('<animate');
   });
 
