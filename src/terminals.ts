@@ -45,12 +45,12 @@ export class Terminals implements vscode.Disposable {
     return undefined;
   }
 
-  open(session: Session, agent: Agent, kind: 'start' | 'resume'): void {
+  open(session: Session, agent: Agent, kind: 'start' | 'resume', icon?: { light: vscode.Uri; dark: vscode.Uri }): void {
     const existing = this.bySession.get(session.id);
     if (existing) { existing.show(); return; }
     const launch = buildLaunch(session, agent, kind);
     // No name: the tab shows the title Claude sets, as in a terminal opened by hand.
-    const terminal = vscode.window.createTerminal({ shellPath: launch.shellPath, cwd: launch.cwd, env: launch.env });
+    const terminal = vscode.window.createTerminal({ shellPath: launch.shellPath, cwd: launch.cwd, env: launch.env, ...(icon ? { iconPath: icon } : {}) });
     this.remembered.delete(session.id);
     this.bySession.set(session.id, terminal);
     void terminal.processId.then(pid => {

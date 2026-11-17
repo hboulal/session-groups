@@ -4,7 +4,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { CLAUDE, OPENCODE, dateName, groupsForFolder, idProblem, newSessionId, resolveAgents, startFolder, type Agent, type Group, type Session } from './model';
-import { iconName } from './icons';
+import { canMark, iconName } from './icons';
 import { Store } from './store';
 import { activeCount, archivedChildren, GROUP_COLORS, groupColor, searchItems } from './view';
 import { Terminals } from './terminals';
@@ -59,6 +59,13 @@ export function activate(context: vscode.ExtensionContext): void {
       const file = await findTranscript(claudeConfigDir(), s.id);
       return file ? (await fs.stat(file)).mtime : undefined;
     },
+  };
+  // A session's resting icon, with its group's colour as in the panel; a terminal tab gets it once, at creation.
+  const sessionIcon = (session: Session) => {
+    const state = store.read();
+    const group = state.groups.find(g => g.id === session.groupId);
+    const color = group ? groupColor(state, group) : undefined;
+    return hover.icon({ kind: 'active', pinned: false, color: color && canMark(color) ? color : undefined });
   };
   const tree = new GroupsTree(store, terminals, agents, hover);
   const archivedTree = new ArchivedTree(store, terminals, agents, hover);
@@ -163,13 +170,13 @@ export function activate(context: vscode.ExtensionContext): void {
       agentId: agent.id,
       createdAt: now.toISOString(),
     };
-    if (await attempt(() => store.addSession(session))) { terminals.open(session, agent, 'start'); }
+    if (await attempt(() => store.addSession(session))) { terminals.open(session, agent, 'start', sessionIcon(session)); }
   };
 
   const openSession = (session: Session): void => {
     const agent = agents().find(a => a.id === session.agentId);
     if (!agent) { showError(new Error(`unknown agent "${session.agentId}"`)); return; }
-    terminals.open(session, agent, 'resume');
+    terminals.open(session, agent, 'resume', sessionIcon(session));
   };
 
   const required = (value: string) => value.trim() === '' ? 'A name is required' : undefined;
