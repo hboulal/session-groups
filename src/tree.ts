@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { canMark, type MarkedKind } from './icons';
+import { canMark, type IconSpec } from './icons';
 import type { Agent, Group, Session } from './model';
 import type { State, Store } from './store';
 import type { Terminals } from './terminals';
@@ -82,8 +82,7 @@ export class GroupsTree implements vscode.TreeDataProvider<TreeNode>, vscode.Dis
     const group = state.groups.find(g => g.id === element.groupId);
     const color = group ? groupColor(state, group) : undefined;
     const mark = color && canMark(color) ? color : undefined;
-    const name = this.flat ? flatLabel(state, element) : element.name;
-    const label = element.pinned === true ? `★ ${name}` : name;
+    const label = this.flat ? flatLabel(state, element) : element.name;
     return sessionItem(state, element, label, this.terminals, this.agents(), this.env, false, false, mark);
   }
 
@@ -156,9 +155,8 @@ export class ArchivedTree implements vscode.TreeDataProvider<ArchivedNode>, vsco
 // whose turn it is in a running session ('unseen': it finished while its terminal was not in front).
 export type SessionTurn = 'working' | 'done' | 'unseen';
 export interface TreeEnv {
-  activeIcon: ActiveIcon;
-  unseenIcon: ActiveIcon;
-  markedIcon(kind: MarkedKind, color: string): ActiveIcon;
+  icon(spec: IconSpec): ActiveIcon;
+  justFinished(sessionId: string): boolean;
   turn(sessionId: string): SessionTurn | undefined;
   defaultFolder(): string | undefined;
   agentFor(group: Group | undefined): Agent | undefined;
@@ -210,7 +208,7 @@ function groupIcon(state: State, group: Group | undefined): vscode.ThemeIcon {
   return group ? new vscode.ThemeIcon('circle-filled', new vscode.ThemeColor(groupColor(state, group))) : new vscode.ThemeIcon('circle-outline');
 }
 
-// The active icon is an image, not a coloured codicon: a selected row repaints codicons in the selection colour, an image keeps its green.
+// Every session icon except the working spinner and the archive icon is an image, not a coloured codicon: a selected row repaints codicons in the selection colour, an image keeps its colours.
 export type ActiveIcon = { light: vscode.Uri; dark: vscode.Uri };
 
 function sessionItem(state: State, element: Session, label: string, terminals: Terminals, agents: readonly Agent[], env: TreeEnv, archived: boolean, withGroup = archived, mark?: string): vscode.TreeItem {
@@ -219,8 +217,8 @@ function sessionItem(state: State, element: Session, label: string, terminals: T
   const active = terminals.isOpen(element.id);
   const turn = active ? env.turn(element.id) : undefined;
   item.iconPath = turn === 'working' ? new vscode.ThemeIcon('loading~spin')
-    : mark ? env.markedIcon(turn === 'unseen' ? 'unseen' : active ? 'active' : 'idle', mark)
-      : turn === 'unseen' ? env.unseenIcon : active ? env.activeIcon : new vscode.ThemeIcon(archived ? 'archive' : 'history');
+    : archived && !active ? new vscode.ThemeIcon('archive')
+      : env.icon({ kind: turn === 'unseen' ? 'unseen' : active ? 'active' : 'idle', pinned: !archived && element.pinned === true, color: mark, animated: turn === 'unseen' && env.justFinished(element.id) });
   item.contextValue = archived ? 'archivedSession' : element.pinned === true ? (active ? 'pinnedActiveSession' : 'pinnedSession') : active ? 'activeSession' : 'session';
   item.description = sessionDescription(state, element, new Date(), withGroup, agents);
   if (!archived) { item.command = { command: 'sessionGroups.openSession', title: 'Open Session', arguments: [element] }; }

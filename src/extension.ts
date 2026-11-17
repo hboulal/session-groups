@@ -4,7 +4,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { CLAUDE, OPENCODE, dateName, groupsForFolder, idProblem, newSessionId, resolveAgents, startFolder, type Agent, type Group, type Session } from './model';
-import { markedName } from './icons';
+import { iconName } from './icons';
 import { Store } from './store';
 import { activeCount, archivedChildren, GROUP_COLORS, groupColor, searchItems } from './view';
 import { Terminals } from './terminals';
@@ -42,20 +42,17 @@ export function activate(context: vscode.ExtensionContext): void {
   const pickAgent = async (placeHolder: string): Promise<Agent | undefined> =>
     (await vscode.window.showQuickPick(agents().map(a => ({ label: a.name, description: a.id, agent: a })), { placeHolder }))?.agent;
 
-  const activeIcon = { light: vscode.Uri.joinPath(context.extensionUri, 'media', 'active-light.svg'), dark: vscode.Uri.joinPath(context.extensionUri, 'media', 'active-dark.svg') };
-  // Last activity is the transcript's modification time; only Claude's transcript is known.
-  const unseenIcon = { light: vscode.Uri.joinPath(context.extensionUri, 'media', 'unseen-light.svg'), dark: vscode.Uri.joinPath(context.extensionUri, 'media', 'unseen-dark.svg') };
-  const markedDir = vscode.Uri.joinPath(context.extensionUri, 'media', 'marked');
+  const iconsDir = vscode.Uri.joinPath(context.extensionUri, 'media', 'icons');
   // Whose turn it is in each running Claude or OpenCode session, from the agent's own records; 'unseen' marks a finish not looked at yet.
   const turns = new Map<string, Turn>();
   const unseen = new Set<string>();
   const hover: TreeEnv = {
-    activeIcon,
-    unseenIcon,
-    markedIcon: (kind, color) => ({ light: vscode.Uri.joinPath(markedDir, markedName(kind, color, 'light')), dark: vscode.Uri.joinPath(markedDir, markedName(kind, color, 'dark')) }),
+    icon: spec => ({ light: vscode.Uri.joinPath(iconsDir, iconName(spec, 'light')), dark: vscode.Uri.joinPath(iconsDir, iconName(spec, 'dark')) }),
+    justFinished: () => false,
     turn: (id): SessionTurn | undefined => unseen.has(id) ? 'unseen' : turns.get(id),
     defaultFolder: () => defaultFolder(),
     agentFor: group => agentFor(group),
+    // Last activity is the transcript's modification time; only Claude's transcript is known.
     lastActivity: async s => {
       if (s.agentId !== CLAUDE.id) { return undefined; }
       const file = await findTranscript(claudeConfigDir(), s.id);
@@ -311,7 +308,7 @@ export function activate(context: vscode.ExtensionContext): void {
       const state = store.read();
       const items = searchItems(state, new Date(), agents()).flatMap<(vscode.QuickPickItem & { id?: string })>(section => [
         { label: section.label, kind: vscode.QuickPickItemKind.Separator },
-        ...section.items.map(item => ({ ...item, iconPath: terminals.isOpen(item.id) ? activeIcon : new vscode.ThemeIcon('history') })),
+        ...section.items.map(item => ({ ...item, iconPath: hover.icon({ kind: terminals.isOpen(item.id) ? 'active' : 'idle', pinned: false }) })),
       ]);
       const picked = await vscode.window.showQuickPick(items, { placeHolder: 'Search sessions', matchOnDescription: true });
       const session = picked && state.sessions.find(s => s.id === picked.id);

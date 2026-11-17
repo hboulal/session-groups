@@ -175,6 +175,11 @@ describe('searchItems', () => {
     expect(searchItems({ ...state, sessions: [] }, now, [CLAUDE])).toEqual([]);
   });
 
+  it('prefixes a pinned session with the pinned codicon', () => {
+    const state = { version: 1 as const, groups: [{ id: 'g1', name: 'web', before: '', shellPath: '' }], sessions: [{ ...session('a', 'g1', at(1)), pinned: true }] };
+    expect(searchItems(state, now, [CLAUDE])[0]!.items[0]!.label).toBe('$(pinned) a');
+  });
+
   it('shares agent and age formatting with tree rows while preserving the optional group description', () => {
     const s = { ...session('a', 'g1', at(28)), agentId: 'opencode' };
     expect(sessionDescription(state, s, now, true, [OPENCODE])).toBe('OpenCode · alpha · 2 days');
@@ -241,7 +246,7 @@ describe('pinned sessions come first', () => {
     expect(ungroupedChildren(state).map(s => s.id)).toEqual(['u2', 'u1']);
     expect(flatChildren(state).map(s => s.id)).toEqual(['b', 'c', 'u2', 'a', 'd', 'u1']);
     expect(searchItems(state, new Date(), [CLAUDE]).map(sec => sec.items.map(i => i.id))).toEqual([['b', 'a'], ['c', 'd'], ['u2', 'u1']]);
-    expect(searchItems(state, new Date(), [CLAUDE])[0]?.items.map(i => i.label)).toEqual(['★ b', 'a']);
+    expect(searchItems(state, new Date(), [CLAUDE])[0]?.items.map(i => i.label)).toEqual(['$(pinned) b', 'a']);
   });
 
   it('a filter keeps the pinned sessions that pass it first', () => {

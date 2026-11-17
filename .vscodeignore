@@ -9,5 +9,6 @@ vitest.setup.mts
 .gitignore
 **/*.map
 .claude/**
+.superpowers/**
 AGENTS.md
 README.md

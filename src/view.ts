@@ -81,11 +81,11 @@ export function groupDescription(state: State, groupId: string, isActive: IsActi
 export interface SearchItem { id: string; label: string; description: string }
 export interface SearchSection { label: string; items: SearchItem[] }
 
-// Non-empty sections in tree order, each with its openable sessions pinned first, then in stored order; a pinned one has a star before its name.
+// Non-empty sections in tree order, each with its openable sessions pinned first, then in stored order; a pinned one has the pinned codicon before its name.
 export function searchItems(state: State, now: Date, agents: readonly Agent[]): SearchSection[] {
   return [...state.groups, { id: '', name: 'Ungrouped' }].map(g => ({
     label: g.name,
-    items: groupChildren(state, g.id).map(s => ({ id: s.id, label: s.pinned === true ? `★ ${s.name}` : s.name, description: sessionDescription(state, s, now, false, agents) })),
+    items: groupChildren(state, g.id).map(s => ({ id: s.id, label: s.pinned === true ? `$(pinned) ${s.name}` : s.name, description: sessionDescription(state, s, now, false, agents) })),
   })).filter(section => section.items.length > 0);
 }
 
