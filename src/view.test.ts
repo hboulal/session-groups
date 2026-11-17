@@ -7,7 +7,7 @@ const group = (id: string, name: string): Group => ({ id, name, before: '', shel
 const session = (id: string, groupId: string, createdAt: string, archived?: boolean, pinned?: boolean): Session => ({ id, groupId, name: id, before: '', shellPath: '', cwd: '/w', agentId: 'claude', createdAt, ...(archived === undefined ? {} : { archived }), ...(pinned === undefined ? {} : { pinned }) });
 
 describe('flatChildren and flatLabel', () => {
-  it('lists sessions by group order without group rows, and prefixes the group name', () => {
+  it('lists sessions by group order without group rows, and labels them by name', () => {
     const state = {
       version: 1 as const,
       groups: [{ id: 'g2', name: 'api', before: '', shellPath: '' }, { id: 'g1', name: 'web', before: '', shellPath: '' }],
@@ -15,16 +15,9 @@ describe('flatChildren and flatLabel', () => {
     };
     expect(flatChildren(state).map(x => x.id)).toEqual(['b', 'a', 'u']);
     expect(flatChildren(state, id => id === 'a').map(x => x.id)).toEqual(['a']);
-    expect(flatLabel(state, state.sessions[1]!, false)).toBe('api/b');
-    expect(flatLabel(state, state.sessions[2]!, false)).toBe('u');
-    expect(flatLabel(state, { ...state.sessions[1]!, name: '' }, false)).toBe('api');
-  });
-
-  it('leaves the group name out when the icon carries the group colour', () => {
-    const state: State = { version: 1, groups: [group('g1', 'api')], sessions: [] };
-    expect(flatLabel(state, session('a', 'g1', '2026-10-01T00:00:00Z'), true)).toBe('a');
-    expect(flatLabel(state, { ...session('a', 'g1', '2026-10-01T00:00:00Z'), name: '' }, true)).toBe('api');
-    expect(flatLabel(state, session('u', '', '2026-10-01T00:00:00Z'), true)).toBe('u');
+    expect(flatLabel(state, state.sessions[1]!)).toBe('b');
+    expect(flatLabel(state, state.sessions[2]!)).toBe('u');
+    expect(flatLabel(state, { ...state.sessions[1]!, name: '' })).toBe('api');
   });
 });
 

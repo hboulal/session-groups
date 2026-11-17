@@ -244,16 +244,6 @@
         "category": "Session Groups"
       },
       {
-        "command": "sessionGroups.hideColors",
-        "title": "Hide Group Colors",
-        "category": "Session Groups"
-      },
-      {
-        "command": "sessionGroups.showColors",
-        "title": "Show Group Colors",
-        "category": "Session Groups"
-      },
-      {
         "command": "sessionGroups.renameSelected",
         "title": "Rename Selected",
         "category": "Session Groups"
@@ -338,14 +328,6 @@
         },
         {
           "command": "sessionGroups.showArchivedFlat",
-          "when": "false"
-        },
-        {
-          "command": "sessionGroups.hideColors",
-          "when": "false"
-        },
-        {
-          "command": "sessionGroups.showColors",
           "when": "false"
         },
         {
@@ -445,16 +427,6 @@
           "command": "sessionGroups.showGroups",
           "when": "view == sessionGroups.groups && sessionGroups.flat",
           "group": "navigation@4"
-        },
-        {
-          "command": "sessionGroups.hideColors",
-          "when": "view == sessionGroups.groups && sessionGroups.colors",
-          "group": "2_view@3"
-        },
-        {
-          "command": "sessionGroups.showColors",
-          "when": "view == sessionGroups.groups && !sessionGroups.colors",
-          "group": "2_view@3"
         },
         {
           "command": "sessionGroups.showArchivedByGroup",

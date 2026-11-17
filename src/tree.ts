@@ -14,7 +14,6 @@ export class GroupsTree implements vscode.TreeDataProvider<TreeNode>, vscode.Dis
   private activeOnly = false;
   private pinnedOnly = false;
   private flat = false;
-  private colors = true;
 
   constructor(private readonly store: Store, private readonly terminals: Terminals, private readonly agents: () => readonly Agent[], private readonly env: TreeEnv) {
     this.subscriptions = [store.onDidChange(() => this.changed.fire()), terminals.onDidChange(() => this.changed.fire())];
@@ -27,11 +26,6 @@ export class GroupsTree implements vscode.TreeDataProvider<TreeNode>, vscode.Dis
 
   setPinnedOnly(on: boolean): void {
     this.pinnedOnly = on;
-    this.changed.fire();
-  }
-
-  setColors(on: boolean): void {
-    this.colors = on;
     this.changed.fire();
   }
 
@@ -70,7 +64,7 @@ export class GroupsTree implements vscode.TreeDataProvider<TreeNode>, vscode.Dis
       const item = new vscode.TreeItem('Ungrouped', vscode.TreeItemCollapsibleState.Expanded);
       item.id = 'ungrouped';
       item.contextValue = 'ungrouped';
-      item.iconPath = groupIcon(state, undefined, this.colors);
+      item.iconPath = groupIcon(state, undefined);
       item.description = groupDescription(state, '', id => this.terminals.isOpen(id));
       item.tooltip = groupTooltip(state, undefined, this.terminals, this.env);
       return item;
@@ -78,17 +72,17 @@ export class GroupsTree implements vscode.TreeDataProvider<TreeNode>, vscode.Dis
     if (!isSession(element)) {
       const item = new vscode.TreeItem(element.name, vscode.TreeItemCollapsibleState.Expanded);
       item.tooltip = groupTooltip(state, element, this.terminals, this.env);
-      item.iconPath = groupIcon(state, element, this.colors);
+      item.iconPath = groupIcon(state, element);
       item.id = element.id;
       item.contextValue = 'group';
       item.description = groupDescription(state, element.id, id => this.terminals.isOpen(id));
       return item;
     }
-    // A grouped session's icon carries its group's colour while colours are shown, alike with and without group rows.
+    // A grouped session's icon carries its group's colour, alike with and without group rows.
     const group = state.groups.find(g => g.id === element.groupId);
-    const color = group && this.colors ? groupColor(state, group) : undefined;
+    const color = group ? groupColor(state, group) : undefined;
     const mark = color && canMark(color) ? color : undefined;
-    const name = this.flat ? flatLabel(state, element, mark !== undefined) : element.name;
+    const name = this.flat ? flatLabel(state, element) : element.name;
     const label = element.pinned === true ? `★ ${name}` : name;
     return sessionItem(state, element, label, this.terminals, this.agents(), this.env, false, false, mark);
   }
@@ -112,16 +106,10 @@ export class ArchivedTree implements vscode.TreeDataProvider<ArchivedNode>, vsco
   private readonly changed = new vscode.EventEmitter<void>();
   readonly onDidChangeTreeData = this.changed.event;
   private readonly subscription: { dispose(): void };
-  private colors = true;
   private byGroup = false;
 
   constructor(private readonly store: Store, private readonly terminals: Terminals, private readonly agents: () => readonly Agent[], private readonly env: TreeEnv) {
     this.subscription = store.onDidChange(() => this.changed.fire());
-  }
-
-  setColors(on: boolean): void {
-    this.colors = on;
-    this.changed.fire();
   }
 
   refresh(): void {
@@ -148,7 +136,7 @@ export class ArchivedTree implements vscode.TreeDataProvider<ArchivedNode>, vsco
     const item = new vscode.TreeItem(ungrouped ? 'Ungrouped' : element.name, vscode.TreeItemCollapsibleState.Expanded);
     item.id = `archived:${ungrouped ? 'ungrouped' : element.id}`;
     item.contextValue = 'archivedGroup';
-    item.iconPath = groupIcon(state, ungrouped ? undefined : element, this.colors);
+    item.iconPath = groupIcon(state, ungrouped ? undefined : element);
     item.description = String(archivedOf(state, ungrouped ? '' : element.id).length);
     return item;
   }
@@ -217,9 +205,8 @@ function stateText(open: boolean, turn: SessionTurn | undefined): string {
   return turn === 'working' ? 'working' : turn === 'unseen' ? 'finished, not seen yet' : turn === 'done' ? 'running, your turn' : 'running';
 }
 
-// A group's coloured dot (Ungrouped: an outline), or none while colours are hidden.
-function groupIcon(state: State, group: Group | undefined, colors: boolean): vscode.ThemeIcon | undefined {
-  if (!colors) { return undefined; }
+// A group's coloured dot (Ungrouped: an outline).
+function groupIcon(state: State, group: Group | undefined): vscode.ThemeIcon {
   return group ? new vscode.ThemeIcon('circle-filled', new vscode.ThemeColor(groupColor(state, group))) : new vscode.ThemeIcon('circle-outline');
 }
 

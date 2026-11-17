@@ -43,8 +43,7 @@ Nothing is deleted from the agents themselves: removing or archiving a session o
   - search;
   - show only running sessions (lightning);
   - show only pinned sessions (pin);
-  - show sessions without groups (labelled `group/session` when colours are hidden);
-  - in the "…" menu, Hide Group Colors.
+  - show sessions without groups;
 - **Drag and drop** reorders groups and sessions, and moves sessions between groups, while groups are shown.
 
 ## Agents

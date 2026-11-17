@@ -39,12 +39,11 @@ export function flatChildren(state: State, isActive?: IsActive): Session[] {
   return pinnedFirst(rootChildren(state, isActive).flatMap(node => 'groupId' in node ? [node] : groupChildren(state, node.id, isActive)));
 }
 
-// A session's label in the flat list: its group's name in front, unless its icon carries the group's colour.
-export function flatLabel(state: State, s: Session, marked: boolean): string {
+// A session's label in the flat list: its name, or its group's name when it has none.
+export function flatLabel(state: State, s: Session): string {
   const group = state.groups.find(g => g.id === s.groupId);
-  if (!group) { return s.name; }
-  if (s.name === '') { return group.name; }
-  return marked ? s.name : `${group.name}/${s.name}`;
+  if (!group || s.name !== '') { return s.name; }
+  return group.name;
 }
 
 // Group icon colours, in the order new groups take them; green is left to active sessions.

@@ -209,15 +209,6 @@ export function activate(context: vscode.ExtensionContext): void {
   tree.setFlat(isFlat());
   void vscode.commands.executeCommand('setContext', FLAT_KEY, isFlat());
 
-  const COLORS_KEY = 'sessionGroups.colors';
-  const setColors = async (on: boolean): Promise<void> => {
-    await context.globalState.update(COLORS_KEY, on);
-    void vscode.commands.executeCommand('setContext', COLORS_KEY, on);
-    tree.setColors(on);
-    archivedTree.setColors(on);
-  };
-  void setColors(context.globalState.get<boolean>(COLORS_KEY, true));
-
   const dragAndDrop = new GroupsDragAndDrop(store, showError);
   let treeView: vscode.TreeView<unknown> | undefined;
   let treeViewSubscription: vscode.Disposable | undefined;
@@ -264,10 +255,6 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.window.onDidChangeWindowState(clearSeen),
     terminals.onDidChange(clearSeen),
     { dispose: () => { treeViewSubscription?.dispose(); treeView?.dispose(); } },
-
-    register('hideColors', () => setColors(false)),
-
-    register('showColors', () => setColors(true)),
 
     register('addGroup', async () => {
       const name = await vscode.window.showInputBox({ prompt: 'Group name', validateInput: required });
