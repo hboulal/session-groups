@@ -168,6 +168,11 @@
         "category": "Session Groups"
       },
       {
+        "command": "sessionGroups.unpinAllSessions",
+        "title": "Unpin All Sessions",
+        "category": "Session Groups"
+      },
+      {
         "command": "sessionGroups.search",
         "title": "Search Sessions",
         "category": "Session Groups",
@@ -368,6 +373,10 @@
           "when": "false"
         },
         {
+          "command": "sessionGroups.unpinAllSessions",
+          "when": "false"
+        },
+        {
           "command": "sessionGroups.clearArchived",
           "when": "false"
         },
@@ -441,6 +450,11 @@
           "command": "sessionGroups.pinActiveSessions",
           "when": "view == sessionGroups.groups",
           "group": "2_view@3"
+        },
+        {
+          "command": "sessionGroups.unpinAllSessions",
+          "when": "view == sessionGroups.groups",
+          "group": "2_view@4"
         },
         {
           "command": "sessionGroups.showArchivedByGroup",

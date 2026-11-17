@@ -179,6 +179,31 @@ describe('Store', () => {
     expect(m.updates).toBe(before);
   });
 
+  it('unpins every pinned session in one write and leaves archived ones pinned', async () => {
+    const m = new FakeMemento();
+    const s = new Store(m);
+    await s.addSession({ ...session('a', 'g1'), pinned: true });
+    await s.addSession({ ...session('b', 'g1'), pinned: true });
+    await s.addSession({ ...session('c', 'g1'), pinned: true, archived: true });
+    await s.addSession(session('d', 'g1'));
+    const before = m.updates;
+    await s.unpinAll();
+    expect(s.read().sessions.find(x => x.id === 'a')?.pinned).toBe(false);
+    expect(s.read().sessions.find(x => x.id === 'b')?.pinned).toBe(false);
+    expect(s.read().sessions.find(x => x.id === 'c')?.pinned).toBe(true);
+    expect(m.updates - before).toBe(1);
+  });
+
+  it('writes nothing when no session is pinned', async () => {
+    const m = new FakeMemento();
+    const s = new Store(m);
+    await s.addSession({ ...session('c', 'g1'), pinned: true, archived: true });
+    await s.addSession(session('d', 'g1'));
+    const before = m.updates;
+    await s.unpinAll();
+    expect(m.updates).toBe(before);
+  });
+
   it('drops a session whose pinned field is not a boolean', () => {
     const m = new FakeMemento();
     m.data.set(STATE_KEY, { version: 1, groups: [], sessions: [session('s1', 'g1'), { ...session('s2', 'g1'), pinned: 'yes' }] });

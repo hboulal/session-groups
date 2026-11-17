@@ -44,7 +44,7 @@ Nothing is deleted from the agents themselves: removing or archiving a session o
   - show only running sessions (lightning);
   - show only pinned sessions (pin);
   - show sessions without groups;
-  - in the "…" menu, Pin Active Sessions.
+  - in the "…" menu, Pin Active Sessions and Unpin All Sessions.
 - **Drag and drop** reorders groups and sessions, and moves sessions between groups, while groups are shown.
 
 ## Agents
