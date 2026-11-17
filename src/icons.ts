@@ -34,13 +34,14 @@ const DOT = 'cx="13.5" cy="3.5" r="2.5"';
 const SQUARE_RING = 'x="-0.7" y="11.3" width="5.4" height="5.4" rx="1.3"';
 const SQUARE = 'x="0" y="12" width="4" height="4" rx="0.9"';
 
-// All loop. Unseen: the cursor blinks on and off every half second and the dot pulses to a pale red and back every 1.2 s.
+// All loop. Running: the cursor pulses softly to a quarter opacity and back every 1.4 s. Unseen: the cursor blinks on and off every half second and the dot pulses to a pale red and back every 1.2 s.
 // Working, every 1.2 s: each glyph shows for a twelfth of the cycle at 0.6 opacity, one after the other, then the cursor for the rest.
 const SCRAMBLE = 1.2;
 const GLYPH_TIME = 0.1;
 const at = (t: number) => (t / SCRAMBLE).toFixed(4);
 const scramble = (d: string, i: number) => `<path d="${d}" opacity="0"><animate attributeName="opacity" values="0;0.6;0" keyTimes="0;${at(i * GLYPH_TIME)};${at((i + 1) * GLYPH_TIME)}" dur="${SCRAMBLE}s" calcMode="discrete" repeatCount="indefinite"/></path>`;
 const settle = `<path d="${CURSOR}" opacity="0"><animate attributeName="opacity" values="0;1" keyTimes="0;${at(GLYPHS.length * GLYPH_TIME)}" dur="${SCRAMBLE}s" calcMode="discrete" repeatCount="indefinite"/></path>`;
+const PULSE = '<animate attributeName="opacity" values="1;0.25;1" keyTimes="0;0.5;1" dur="1.4s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" repeatCount="indefinite"/>';
 const BLINK = '<animate attributeName="opacity" values="1;0" keyTimes="0;0.5" dur="1s" calcMode="discrete" repeatCount="indefinite"/>';
 const brighten = (theme: IconTheme) => `<animate attributeName="fill" values="${UNSEEN_DOT[theme]};${UNSEEN_DOT_BRIGHT[theme]};${UNSEEN_DOT[theme]}" keyTimes="0;0.5;1" dur="1.2s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" repeatCount="indefinite"/>`;
 
@@ -51,7 +52,8 @@ export function canMark(color: string): boolean {
   return color in CHART_HEX;
 }
 
-const isAnimated = (spec: IconSpec) => spec.animated === true && (spec.kind === 'unseen' || spec.kind === 'working');
+const ANIMATED_KINDS: IconKind[] = ['active', 'working', 'unseen'];
+const isAnimated = (spec: IconSpec) => spec.animated === true && ANIMATED_KINDS.includes(spec.kind);
 
 // The file name of an icon, e.g. `unseen-pinned-blue-anim-dark.svg` or `idle-none-light.svg`.
 export function iconName(spec: IconSpec, theme: IconTheme): string {
@@ -65,7 +67,7 @@ export function iconSvg(spec: IconSpec, theme: IconTheme): string {
   const box = spec.pinned && running ? el('rect', `${BOX} ${filled(GOLD[theme])}`) : el('rect', BOX);
   const slot = spec.kind === 'working'
     ? (animated ? GLYPHS.map(scramble).join('') + settle : '')
-    : el('path', `d="${CURSOR}"`, animated ? BLINK : '');
+    : el('path', `d="${CURSOR}"`, animated ? (spec.kind === 'unseen' ? BLINK : PULSE) : '');
   const prompt = running ? el('path', CHEVRON) + slot : '';
   const dot = spec.kind === 'unseen'
     ? el('circle', `${DOT_RING} ${filled(BG[theme])}`) + el('circle', `${DOT} ${filled(UNSEEN_DOT[theme])}`, animated ? brighten(theme) : '')
@@ -83,6 +85,6 @@ export function allIcons(): { name: string; svg: string }[] {
   const themes: IconTheme[] = ['light', 'dark'];
   const colors: (string | undefined)[] = [...Object.keys(CHART_HEX), undefined];
   const still = kinds.flatMap(kind => [false, true].flatMap(pinned => colors.map((color): IconSpec => ({ kind, pinned, color }))));
-  const twins = still.filter(spec => spec.kind === 'unseen' || spec.kind === 'working').map((spec): IconSpec => ({ ...spec, animated: true }));
+  const twins = still.filter(spec => ANIMATED_KINDS.includes(spec.kind)).map((spec): IconSpec => ({ ...spec, animated: true }));
   return [...still, ...twins].flatMap(spec => themes.map(theme => ({ name: iconName(spec, theme), svg: iconSvg(spec, theme) })));
 }

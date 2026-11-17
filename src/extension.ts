@@ -50,6 +50,7 @@ export function activate(context: vscode.ExtensionContext): void {
     icon: spec => ({ light: vscode.Uri.joinPath(iconsDir, iconName(spec, 'light')), dark: vscode.Uri.joinPath(iconsDir, iconName(spec, 'dark')) }),
     // workbench.reduceMotion is 'on', 'off' or 'auto'; read on every call so a change applies on the next refresh.
     animations: () => vscode.workspace.getConfiguration('workbench').get<string>('reduceMotion') !== 'on',
+    inFront: id => vscode.window.activeTerminal !== undefined && vscode.window.activeTerminal === terminals.terminalOf(id),
     turn: (id): SessionTurn | undefined => unseen.has(id) ? 'unseen' : turns.get(id),
     defaultFolder: () => defaultFolder(),
     agentFor: group => agentFor(group),
@@ -257,8 +258,10 @@ export function activate(context: vscode.ExtensionContext): void {
     tree,
     { dispose: () => { clearInterval(titleTimer); } },
     vscode.window.onDidChangeActiveTerminal(clearSeen),
-    // Picking a session's terminal selects its row, but only while the panel is visible: revealing would open it.
+    // Picking a session's terminal selects its row, but only while the panel is visible: revealing would open it; the scramble moves with it.
     vscode.window.onDidChangeActiveTerminal(terminal => {
+      tree.refresh();
+      archivedTree.refresh();
       const id = terminal && terminals.sessionOf(terminal);
       const session = id ? store.read().sessions.find(s => s.id === id && s.archived !== true) : undefined;
       if (session && treeView?.visible) { void treeView.reveal(session, { select: true, focus: false }); }

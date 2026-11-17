@@ -157,6 +157,8 @@ export type SessionTurn = 'working' | 'done' | 'unseen';
 export interface TreeEnv {
   icon(spec: IconSpec): ActiveIcon;
   animations(): boolean;
+  // Whether the session's terminal is the active terminal.
+  inFront(sessionId: string): boolean;
   turn(sessionId: string): SessionTurn | undefined;
   defaultFolder(): string | undefined;
   agentFor(group: Group | undefined): Agent | undefined;
@@ -216,9 +218,13 @@ function sessionItem(state: State, element: Session, label: string, terminals: T
   item.id = element.id;
   const active = terminals.isOpen(element.id);
   const turn = active ? env.turn(element.id) : undefined;
-  item.iconPath = turn === 'working' ? env.icon({ kind: 'working', pinned: !archived && element.pinned === true, color: mark, animated: env.animations() })
-    : archived && !active ? new vscode.ThemeIcon('archive')
-      : env.icon({ kind: turn === 'unseen' ? 'unseen' : active ? 'active' : 'idle', pinned: !archived && element.pinned === true, color: mark, animated: turn === 'unseen' && env.animations() });
+  const pinned = !archived && element.pinned === true;
+  const anim = env.animations();
+  // Running sessions move: the cursor pulses, the one in front and the working ones scramble, a finish not seen yet blinks.
+  item.iconPath = !active ? (archived ? new vscode.ThemeIcon('archive') : env.icon({ kind: 'idle', pinned, color: mark }))
+    : turn === 'unseen' ? env.icon({ kind: 'unseen', pinned, color: mark, animated: anim })
+      : turn === 'working' || (anim && env.inFront(element.id)) ? env.icon({ kind: 'working', pinned, color: mark, animated: anim })
+        : env.icon({ kind: 'active', pinned, color: mark, animated: anim });
   item.contextValue = archived ? 'archivedSession' : element.pinned === true ? (active ? 'pinnedActiveSession' : 'pinnedSession') : active ? 'activeSession' : 'session';
   item.description = sessionDescription(state, element, new Date(), withGroup, agents);
   if (!archived) { item.command = { command: 'sessionGroups.openSession', title: 'Open Session', arguments: [element] }; }

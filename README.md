@@ -12,9 +12,9 @@ Session Groups is a VS Code side panel for terminal coding agents such as Claude
 
 - **Your own groups.** A group has a name, a colour, the folder its sessions start in, the shell its terminals use and the agent its "+" starts. Sessions without a group are listed under **Ungrouped**.
 - **Resume with a click.** Clicking a session resumes it in a terminal, or brings its terminal to the front if it is already open. A running session survives a window reload.
-- **See what is running.** A session with an open terminal has a green terminal icon, or gold when pinned; a session that is not running is an empty grey box, hollow gold when pinned. For Claude Code and OpenCode the icon also shows whose turn it is:
-  - its prompt scrambles while the agent works;
-  - it is green (gold when pinned) when it is your turn;
+- **See what is running.** A session with an open terminal has a green terminal icon, or gold when pinned, with a softly pulsing cursor; the one whose terminal is in front scrambles its prompt; a session that is not running is an empty grey box, hollow gold when pinned. For Claude Code and OpenCode the icon also shows whose turn it is:
+  - any session whose agent is working scrambles its prompt;
+  - it is green (gold when pinned), its cursor pulsing, when it is your turn;
   - it gets a red dot and a blinking cursor while the agent's answer waits for you, with a notification that offers to open it.
 - **Pin.** A pinned session has a gold icon and stays at the top of its group, or of the list without groups; unpinning leaves it just under the pinned ones; the pin button in the view title shows pinned sessions only.
 - **Follows your terminals.** Picking a session's terminal selects its row in the panel. The terminal tab carries the session's icon.
