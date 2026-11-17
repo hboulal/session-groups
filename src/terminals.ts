@@ -9,7 +9,7 @@ export const TERMINALS_KEY = 'sessionGroups.terminals';
 export class Terminals implements vscode.Disposable {
   private readonly bySession = new Map<string, vscode.Terminal>();
   private readonly live = new Map<string, Remembered>();
-  // When this window opened or reattached each session's terminal (Date.now()).
+  // When open() started each session's terminal (Date.now()); a reattached terminal kept its process, so its transcript is trusted in full and it has no entry.
   private readonly opened = new Map<string, number>();
   // Terminals open before the last reload that have not been found again yet.
   private readonly remembered: Map<string, Remembered>;
@@ -96,12 +96,11 @@ export class Terminals implements vscode.Disposable {
   private async adopt(terminal: vscode.Terminal): Promise<void> {
     if (this.remembered.size === 0 || [...this.bySession.values()].includes(terminal)) { return; }
     const pid = await terminal.processId;
-    const match = matchTerminal(this.remembered, pid, terminal.name);
+    const match = matchTerminal(this.remembered, pid, terminal.name, p => { try { process.kill(p, 0); return true; } catch { return false; } });
     if (!match || pid === undefined || this.bySession.has(match.sessionId)) { return; }
     this.remembered.delete(match.sessionId);
     if (match.kind === 'dispose') { terminal.dispose(); void this.save(); return; }
     this.bySession.set(match.sessionId, terminal);
-    this.opened.set(match.sessionId, Date.now());
     this.live.set(match.sessionId, { pid, name: terminal.name });
     void this.save();
     this.changed.fire();
