@@ -116,7 +116,7 @@ export function activate(context: vscode.ExtensionContext): void {
         const tail = await readTail(file, 256 * 1024);
         const title = lastCustomTitle(tail);
         if (title) { await store.applyAgentTitle(s.id, title); }
-        applyTurn(s, lastTurn(tail));
+        applyTurn(s, lastTurn(tail, terminals.openedAt(s.id)));
       }
     } catch { /* a transcript that cannot be read keeps the current name */ }
     finally { polling = false; }

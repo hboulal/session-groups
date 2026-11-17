@@ -9,6 +9,8 @@ export const TERMINALS_KEY = 'sessionGroups.terminals';
 export class Terminals implements vscode.Disposable {
   private readonly bySession = new Map<string, vscode.Terminal>();
   private readonly live = new Map<string, Remembered>();
+  // When this window opened or reattached each session's terminal (Date.now()).
+  private readonly opened = new Map<string, number>();
   // Terminals open before the last reload that have not been found again yet.
   private readonly remembered: Map<string, Remembered>;
   private readonly subscriptions: vscode.Disposable[];
@@ -40,6 +42,10 @@ export class Terminals implements vscode.Disposable {
     return this.bySession.get(sessionId);
   }
 
+  openedAt(sessionId: string): number | undefined {
+    return this.opened.get(sessionId);
+  }
+
   sessionOf(terminal: vscode.Terminal): string | undefined {
     for (const [id, t] of this.bySession) { if (t === terminal) { return id; } }
     return undefined;
@@ -53,6 +59,7 @@ export class Terminals implements vscode.Disposable {
     const terminal = vscode.window.createTerminal({ shellPath: launch.shellPath, cwd: launch.cwd, env: launch.env, ...(icon ? { iconPath: icon } : {}) });
     this.remembered.delete(session.id);
     this.bySession.set(session.id, terminal);
+    this.opened.set(session.id, Date.now());
     void terminal.processId.then(pid => {
       if (pid === undefined || this.bySession.get(session.id) !== terminal) { return; }
       this.live.set(session.id, { pid, name: terminal.name });
@@ -94,6 +101,7 @@ export class Terminals implements vscode.Disposable {
     this.remembered.delete(match.sessionId);
     if (match.kind === 'dispose') { terminal.dispose(); void this.save(); return; }
     this.bySession.set(match.sessionId, terminal);
+    this.opened.set(match.sessionId, Date.now());
     this.live.set(match.sessionId, { pid, name: terminal.name });
     void this.save();
     this.changed.fire();
@@ -102,6 +110,7 @@ export class Terminals implements vscode.Disposable {
   private forget(sessionId: string): void {
     this.bySession.delete(sessionId);
     this.live.delete(sessionId);
+    this.opened.delete(sessionId);
     void this.save();
   }
 

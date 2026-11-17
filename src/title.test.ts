@@ -45,6 +45,20 @@ describe('lastTurn', () => {
     expect(lastTurn([assistant('end_turn'), user('do this next')].join('\n'))).toBe('working');
     expect(lastTurn([assistant('end_turn'), notification, assistant('tool_use')].join('\n'))).toBe('working');
   });
+
+  it('ignores entries older than the terminal: a stale tool result is unknown, a fresh prompt is working', () => {
+    const since = Date.parse('2026-11-17T09:00:00.000Z');
+    const stale = user([{ type: 'tool_result' }], { timestamp: '2026-11-17T08:00:00.000Z' });
+    expect(lastTurn(stale, since)).toBeUndefined();
+    expect(lastTurn([stale, user('hi', { timestamp: '2026-11-17T09:00:01.000Z' })].join('\n'), since)).toBe('working');
+    expect(lastTurn(stale)).toBe('working');
+  });
+
+  it('is done after stop_sequence and refusal, working after max_tokens', () => {
+    expect(lastTurn([user('hi'), assistant('stop_sequence')].join('\n'))).toBe('done');
+    expect(lastTurn([user('hi'), assistant('refusal')].join('\n'))).toBe('done');
+    expect(lastTurn([user('hi'), assistant('max_tokens')].join('\n'))).toBe('working');
+  });
 });
 
 describe('lastCwd', () => {
