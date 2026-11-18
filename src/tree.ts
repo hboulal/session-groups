@@ -8,34 +8,43 @@ import { archivedChildren, archivedOf, archivedRoot, flatChildren, flatLabel, gr
 type TreeNode = Group | Session | UngroupedNode;
 
 export class GroupsTree implements vscode.TreeDataProvider<TreeNode>, vscode.Disposable {
-  private readonly changed = new vscode.EventEmitter<void>();
+  private readonly changed = new vscode.EventEmitter<TreeNode | undefined>();
   readonly onDidChangeTreeData = this.changed.event;
   private readonly subscriptions: { dispose(): void }[];
+  // The session objects last handed to the view: a single row is redrawn by firing the very object it was built from.
+  private readonly sessionNodes = new Map<string, Session>();
   private activeOnly = false;
   private pinnedOnly = false;
   private flat = false;
 
   constructor(private readonly store: Store, private readonly terminals: Terminals, private readonly agents: () => readonly Agent[], private readonly env: TreeEnv) {
-    this.subscriptions = [store.onDidChange(() => this.changed.fire()), terminals.onDidChange(() => this.changed.fire())];
+    this.subscriptions = [store.onDidChange(() => this.changed.fire(undefined)), terminals.onDidChange(() => this.changed.fire(undefined))];
   }
 
   setActiveOnly(on: boolean): void {
     this.activeOnly = on;
-    this.changed.fire();
+    this.changed.fire(undefined);
   }
 
   setPinnedOnly(on: boolean): void {
     this.pinnedOnly = on;
-    this.changed.fire();
+    this.changed.fire(undefined);
   }
 
   refresh(): void {
-    this.changed.fire();
+    this.changed.fire(undefined);
+  }
+
+  // Redraws one session's row, leaving the other rows and their animations alone; an unknown session redraws everything.
+  refreshSession(id: string | undefined): void {
+    if (id === undefined) { return; }
+    const node = this.sessionNodes.get(id);
+    if (node) { this.changed.fire(node); } else { this.refresh(); }
   }
 
   setFlat(on: boolean): void {
     this.flat = on;
-    this.changed.fire();
+    this.changed.fire(undefined);
   }
 
   private filter(): IsActive | undefined {
@@ -45,6 +54,12 @@ export class GroupsTree implements vscode.TreeDataProvider<TreeNode>, vscode.Dis
   }
 
   getChildren(element?: TreeNode): TreeNode[] {
+    const children = this.childrenOf(element);
+    for (const child of children) { if (isSession(child)) { this.sessionNodes.set(child.id, child); } }
+    return children;
+  }
+
+  private childrenOf(element?: TreeNode): TreeNode[] {
     const state = this.store.read();
     if (!element) { return this.flat ? flatChildren(state, this.filter()) : groupedRoot(state); }
     if (isUngroupedNode(element)) { return ungroupedChildren(state, this.filter()); }

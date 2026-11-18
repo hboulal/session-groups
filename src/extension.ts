@@ -246,6 +246,9 @@ export function activate(context: vscode.ExtensionContext): void {
 
   buildTreeView();
 
+  // The session whose terminal is in front, so that switching terminals redraws only the row it leaves and the row it reaches.
+  let frontId: string | undefined = vscode.window.activeTerminal && terminals.sessionOf(vscode.window.activeTerminal);
+
   context.subscriptions.push(
     archivedTree,
     archivedView,
@@ -260,9 +263,12 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.window.onDidChangeActiveTerminal(clearSeen),
     // Picking a session's terminal selects its row, but only while the panel is visible: revealing would open it; the scramble moves with it.
     vscode.window.onDidChangeActiveTerminal(terminal => {
-      tree.refresh();
-      archivedTree.refresh();
       const id = terminal && terminals.sessionOf(terminal);
+      const previous = frontId;
+      frontId = id;
+      tree.refreshSession(previous);
+      tree.refreshSession(id);
+      archivedTree.refresh();
       const session = id ? store.read().sessions.find(s => s.id === id && s.archived !== true) : undefined;
       if (session && treeView?.visible) { void treeView.reveal(session, { select: true, focus: false }); }
     }),
