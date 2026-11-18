@@ -4,7 +4,7 @@ Your coding-agent sessions, in your own groups, one click from being resumed.
 
 Session Groups is a VS Code side panel for terminal coding agents such as Claude Code, OpenCode, GitHub Copilot CLI, Gemini CLI, Qwen Code and Goose. Each session runs in a real VS Code terminal. Sessions stay listed after VS Code restarts, and a click resumes one where you left it.
 
-![The Session Groups panel: groups with running, working and finished sessions, and the Archived view](docs/screenshots/panel.png)
+![The Session Groups panel: three groups and Ungrouped, pinned sessions in gold, a working session scrambling its prompt, a finished one with the red dot, and the Archived view](docs/screenshots/panel.png)
 
 ![Search Sessions, grouped by group](docs/screenshots/search.png)
 
@@ -12,10 +12,7 @@ Session Groups is a VS Code side panel for terminal coding agents such as Claude
 
 - **Your own groups.** A group has a name, a colour, the folder its sessions start in, the shell its terminals use and the agent its "+" starts. Sessions without a group are listed under **Ungrouped**.
 - **Resume with a click.** Clicking a session resumes it in a terminal, or brings its terminal to the front if it is already open. A running session survives a window reload.
-- **See what is running.** A session with an open terminal has a green terminal icon, or gold when pinned, with a softly pulsing cursor; the one whose terminal is in front scrambles its prompt; a session that is not running is an empty grey box, hollow gold when pinned. For Claude Code and OpenCode the icon also shows whose turn it is:
-  - any session whose agent is working scrambles its prompt;
-  - it is green (gold when pinned), its cursor pulsing, when it is your turn;
-  - it gets a red dot and a blinking cursor while the agent's answer waits for you, with a notification that offers to open it.
+- **See what is running, at a glance.** A session with an open terminal is a green terminal box with a `>_` prompt, gold when pinned; one that is not running is an empty box. The prompt moves: the cursor pulses on a running session, the slot scrambles on the session in front and on any session whose agent is working, and a red dot with a blinking cursor marks a session whose answer waits for you, with a notification that offers to open it. Whose turn it is is read for Claude Code and OpenCode; other agents show the running box.
 - **Pin.** A pinned session has a gold icon and stays at the top of its group, or of the list without groups; unpinning leaves it just under the pinned ones; the pin button in the view title shows pinned sessions only.
 - **Follows your terminals.** Picking a session's terminal selects its row in the panel. The terminal tab carries the session's icon.
 - **Counts at a glance.** Each group shows how many sessions it has and how many are running (`5 · 2 active`). The view title and the activity-bar badge show the total running.
