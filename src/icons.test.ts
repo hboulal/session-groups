@@ -56,29 +56,32 @@ describe('session icons', () => {
     expect(iconSvg({ kind: 'active', pinned: false }, 'dark')).not.toContain('y="12"');
   });
 
-  it('draws the working icon with an empty slot, and its twin scrambles four glyphs before the cursor settles', () => {
+  it('draws the working icon with an empty slot, and animated it keeps showing glyphs, never the cursor', () => {
     const still = iconSvg({ kind: 'working', pinned: false }, 'dark');
     expect(still).toContain('d="M3.75 6l2 2-2 2"');
     expect(still).not.toContain('h4.5');
     const svg = iconSvg({ kind: 'working', pinned: false, animated: true }, 'dark');
-    const glyphs = ['M8.2 6.2h3.6M10 6.2v3.6', 'M8.2 6.2l3.6 3.6M11.8 6.2l-3.6 3.6', 'M8.2 8h3.6M9 6.2v3.6M11 6.2v3.6', 'M8.2 9.8v-3.6h3.6v3.6'];
-    const times = ['0;0.0000;0.0833', '0;0.0833;0.1667', '0;0.1667;0.2500', '0;0.2500;0.3333'];
-    glyphs.forEach((d, i) => {
-      expect(svg).toContain(`<path d="${d}" opacity="0"><animate attributeName="opacity" values="0;0.6;0" keyTimes="${times[i]}" dur="1.2s" calcMode="discrete" repeatCount="indefinite"/></path>`);
-    });
-    expect(svg).toContain('<path d="M7.75 10h4.5" opacity="0"><animate attributeName="opacity" values="0;1" keyTimes="0;0.3333" dur="1.2s" calcMode="discrete" repeatCount="indefinite"/></path>');
+    expect(svg).not.toContain('h4.5');
+    const times = '0.0000;0.0833;0.1667;0.2500;0.3333;0.4167;0.5000;0.5833;0.6667;0.7500;0.8333;0.9167';
+    expect(svg).toContain(`<path d="M8.2 6.2h3.6M10 6.2v3.6" opacity="0"><animate attributeName="opacity" values="0.6;0;0;0;0;0.6;0;0;0.6;0;0;0" keyTimes="${times}" dur="1.2s" calcMode="discrete" repeatCount="indefinite"/></path>`);
+    // In every twelfth of the beat exactly one glyph shows, and never the same one twice running, the loop's turn included.
+    const shown = [...svg.matchAll(/values="([0-9.;]+)" keyTimes="0\.0000;0\.0833/g)].map(m => m[1]!.split(';'));
+    expect(shown).toHaveLength(4);
+    const order = shown[0]!.map((_, slot) => shown.map(v => v[slot]).filter(v => v === '0.6').length === 1 ? shown.findIndex(v => v[slot] === '0.6') : -1);
+    expect(order).not.toContain(-1);
+    order.forEach((glyph, slot) => expect(glyph).not.toBe(order[(slot + 1) % order.length]));
     expect(iconSvg({ kind: 'idle', pinned: false, animated: true }, 'dark')).not.toContain('<animate');
   });
 
   it('animates the unseen twin in a loop: the cursor blinks and the dot pulses', () => {
     const svg = iconSvg({ kind: 'unseen', pinned: false, animated: true }, 'light');
-    expect(svg).toContain('<animate attributeName="opacity" values="0;1" keyTimes="0;0.3333" dur="1.2s" calcMode="discrete" repeatCount="indefinite"/>');
+    expect(svg).toContain('<animate attributeName="opacity" values="1;0" keyTimes="0;0.5" dur="0.6s" calcMode="discrete" repeatCount="indefinite"/>');
     expect(svg).toContain('<animate attributeName="fill" values="#E51400;#FF9B9B;#E51400" keyTimes="0;0.5;1" dur="1.2s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" repeatCount="indefinite"/>');
   });
 
   it('pulses the cursor of the running twin softly, and keeps the running icon still', () => {
     const svg = iconSvg({ kind: 'active', pinned: false, animated: true }, 'light');
-    expect(svg).toContain('<path d="M7.75 10h4.5"><animate attributeName="opacity" values="0.25;1;1;0.25" keyTimes="0;0.3333;0.6667;1" dur="1.2s" calcMode="spline" keySplines="0.4 0 0.6 1;0 0 1 1;0.4 0 0.6 1" repeatCount="indefinite"/></path>');
+    expect(svg).toContain('<path d="M7.75 10h4.5"><animate attributeName="opacity" values="1;0.25;1" keyTimes="0;0.5;1" dur="1.2s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" repeatCount="indefinite"/></path>');
     expect(iconSvg({ kind: 'active', pinned: false }, 'light')).not.toContain('<animate');
   });
 
