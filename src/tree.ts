@@ -235,7 +235,7 @@ function sessionItem(state: State, element: Session, label: string, terminals: T
   const turn = active ? env.turn(element.id) : undefined;
   const pinned = !archived && element.pinned === true;
   const anim = env.animations();
-  // Running sessions move: the cursor pulses, the one in front and the working ones scramble, a finish not seen yet blinks.
+  // Running sessions move: the cursor pulses, the one in front and the working ones scramble, a finish not seen yet pulses fast.
   item.iconPath = !active ? (archived ? new vscode.ThemeIcon('archive') : env.icon({ kind: 'idle', pinned, color: mark }))
     : turn === 'unseen' ? env.icon({ kind: 'unseen', pinned, color: mark, animated: anim })
       : turn === 'working' || (anim && env.inFront(element.id)) ? env.icon({ kind: 'working', pinned, color: mark, animated: anim })
