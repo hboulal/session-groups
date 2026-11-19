@@ -35,14 +35,15 @@ const SQUARE_RING = 'x="-0.7" y="11.3" width="5.4" height="5.4" rx="1.3"';
 const SQUARE = 'x="0" y="12" width="4" height="4" rx="0.9"';
 
 // All loop in time with one beat of 1.2 s; drawn with the clock's place in the beat as `phase`, every row moves in time with the others.
-// Running: the cursor fades slowly to a quarter opacity and back, once a beat. Unseen: the cursor blinks fast, on and off twice a beat, and the dot pulses to a pale red and back.
+// Running: the cursor fades slowly to a quarter opacity and back, once a beat. Unseen: the cursor fades the same way twice a beat, and the dot pulses to a pale red and back.
 // Working: no cursor; a glyph in each twelfth of the beat, in an order that never shows the same one twice running, and the glyphs fade with the running cursor's pulse.
 export const BEAT = 1.2;
 const ORDER = [0, 1, 2, 3, 1, 0, 3, 2, 0, 2, 1, 3];
 const SLOTS = ORDER.map((_, i) => (i / ORDER.length).toFixed(4)).join(';');
 const scramble = (d: string, glyph: number) => `<path d="${d}" opacity="0"><animate attributeName="opacity" values="${ORDER.map(o => o === glyph ? '1' : '0').join(';')}" keyTimes="${SLOTS}" dur="${BEAT}s" calcMode="discrete" repeatCount="indefinite"/></path>`;
-const PULSE = `<animate attributeName="opacity" values="1;0.25;1" keyTimes="0;0.5;1" dur="${BEAT}s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" repeatCount="indefinite"/>`;
-const BLINK = `<animate attributeName="opacity" values="1;0" keyTimes="0;0.5" dur="${BEAT / 2}s" calcMode="discrete" repeatCount="indefinite"/>`;
+const pulse = (dur: number) => `<animate attributeName="opacity" values="1;0.25;1" keyTimes="0;0.5;1" dur="${dur}s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" repeatCount="indefinite"/>`;
+const PULSE = pulse(BEAT);
+const FAST_PULSE = pulse(BEAT / 2);
 const brighten = (theme: IconTheme) => `<animate attributeName="fill" values="${UNSEEN_DOT[theme]};${UNSEEN_DOT_BRIGHT[theme]};${UNSEEN_DOT[theme]}" keyTimes="0;0.5;1" dur="${BEAT}s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" repeatCount="indefinite"/>`;
 
 const el = (tag: string, attrs: string, child = '') => child ? `<${tag} ${attrs}>${child}</${tag}>` : `<${tag} ${attrs}/>`;
@@ -68,7 +69,7 @@ export function iconSvg(spec: IconSpec, theme: IconTheme, phase = 0): string {
   const box = spec.pinned && running ? el('rect', `${BOX} ${filled(GOLD[theme])}`) : el('rect', BOX);
   const slot = spec.kind === 'working'
     ? (animated ? `<g>${PULSE}${GLYPHS.map(scramble).join('')}</g>` : '')
-    : el('path', `d="${CURSOR}"`, animated ? (spec.kind === 'unseen' ? BLINK : PULSE) : '');
+    : el('path', `d="${CURSOR}"`, animated ? (spec.kind === 'unseen' ? FAST_PULSE : PULSE) : '');
   const prompt = running ? el('path', CHEVRON) + slot : '';
   const dot = spec.kind === 'unseen'
     ? el('circle', `${DOT_RING} ${filled(BG[theme])}`) + el('circle', `${DOT} ${filled(UNSEEN_DOT[theme])}`, animated ? brighten(theme) : '')

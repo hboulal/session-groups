@@ -75,9 +75,9 @@ describe('session icons', () => {
     expect(iconSvg({ kind: 'idle', pinned: false, animated: true }, 'dark')).not.toContain('<animate');
   });
 
-  it('animates the unseen twin in a loop: the cursor blinks and the dot pulses', () => {
+  it('animates the unseen twin in a loop: the cursor pulses fast and the dot pulses', () => {
     const svg = iconSvg({ kind: 'unseen', pinned: false, animated: true }, 'light');
-    expect(svg).toContain('<animate attributeName="opacity" values="1;0" keyTimes="0;0.5" dur="0.6s" calcMode="discrete" repeatCount="indefinite"/>');
+    expect(svg).toContain('<animate attributeName="opacity" values="1;0.25;1" keyTimes="0;0.5;1" dur="0.6s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" repeatCount="indefinite"/>');
     expect(svg).toContain('<animate attributeName="fill" values="#E51400;#FF9B9B;#E51400" keyTimes="0;0.5;1" dur="1.2s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" repeatCount="indefinite"/>');
   });
 
