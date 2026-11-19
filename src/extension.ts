@@ -4,7 +4,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { CLAUDE, OPENCODE, dateName, groupsForFolder, idProblem, newSessionId, resolveAgents, startFolder, type Agent, type Group, type Session } from './model';
-import { canMark, iconName } from './icons';
+import { BEAT, canMark, iconName, iconSvg } from './icons';
 import { Store } from './store';
 import { activeCount, archivedChildren, GROUP_COLORS, groupColor, searchItems } from './view';
 import { Terminals } from './terminals';
@@ -47,7 +47,13 @@ export function activate(context: vscode.ExtensionContext): void {
   const turns = new Map<string, Turn>();
   const unseen = new Set<string>();
   const hover: TreeEnv = {
-    icon: spec => ({ light: vscode.Uri.joinPath(iconsDir, iconName(spec, 'light')), dark: vscode.Uri.joinPath(iconsDir, iconName(spec, 'dark')) }),
+    // A still icon is a shipped file. An animated one is drawn now, starting where the clock is in the beat, so every row moves in time with the others whenever it was drawn.
+    icon: spec => {
+      if (spec.animated !== true) { return { light: vscode.Uri.joinPath(iconsDir, iconName(spec, 'light')), dark: vscode.Uri.joinPath(iconsDir, iconName(spec, 'dark')) }; }
+      const phase = (Date.now() % (BEAT * 1000)) / 1000;
+      const data = (theme: 'light' | 'dark') => vscode.Uri.parse(`data:image/svg+xml;base64,${Buffer.from(iconSvg(spec, theme, phase)).toString('base64')}`);
+      return { light: data('light'), dark: data('dark') };
+    },
     // workbench.reduceMotion is 'on', 'off' or 'auto'; read on every call so a change applies on the next refresh.
     animations: () => vscode.workspace.getConfiguration('workbench').get<string>('reduceMotion') !== 'on',
     inFront: id => vscode.window.activeTerminal !== undefined && vscode.window.activeTerminal === terminals.terminalOf(id),
@@ -398,6 +404,17 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
 
     // One menu; only the picked setting is asked for.
+    // Selects the folder the group's sessions start in, in the Explorer; that view only holds the workspace's folders.
+    register('revealGroupFolder', async arg => {
+      if (!isGroup(arg)) { return; }
+      const folder = startFolder(arg.folder, defaultFolder(), vscode.workspace.workspaceFolders?.[0]?.uri.fsPath, os.homedir());
+      const uri = vscode.Uri.file(folder);
+      const exists = await fs.stat(folder).then(s => s.isDirectory(), () => false);
+      if (!exists) { void vscode.window.showInformationMessage(`Folder not found: ${folder}`); return; }
+      if (!vscode.workspace.getWorkspaceFolder(uri)) { void vscode.window.showInformationMessage(`Not in this workspace: ${folder}`); return; }
+      await vscode.commands.executeCommand('revealInExplorer', uri);
+    }),
+
     register('editGroup', async arg => {
       if (!isGroup(arg)) { return; }
       const color = groupColor(store.read(), arg);

@@ -226,6 +226,12 @@
         "icon": "$(trash)"
       },
       {
+        "command": "sessionGroups.revealGroupFolder",
+        "title": "Reveal Folder in Explorer",
+        "category": "Session Groups",
+        "icon": "$(arrow-swap)"
+      },
+      {
         "command": "sessionGroups.editGroup",
         "title": "Group Settings",
         "category": "Session Groups",
@@ -385,6 +391,10 @@
           "when": "false"
         },
         {
+          "command": "sessionGroups.revealGroupFolder",
+          "when": "false"
+        },
+        {
           "command": "sessionGroups.editSessionId",
           "when": "false"
         },
@@ -473,6 +483,11 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "sessionGroups.revealGroupFolder",
+          "when": "view == sessionGroups.groups && viewItem == group",
+          "group": "inline@0"
+        },
         {
           "command": "sessionGroups.newSession",
           "when": "view == sessionGroups.groups && viewItem == group",

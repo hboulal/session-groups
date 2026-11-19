@@ -9,12 +9,10 @@ describe('session icons', () => {
     expect(canMark('unknown')).toBe(false);
   });
 
-  it('names a file by kind, pin, colour, animation and theme', () => {
+  it('names a still file by kind, pin, colour and theme', () => {
     expect(iconName({ kind: 'active', pinned: false, color: 'charts.blue' }, 'dark')).toBe('active-blue-dark.svg');
     expect(iconName({ kind: 'idle', pinned: true }, 'light')).toBe('idle-pinned-none-light.svg');
-    expect(iconName({ kind: 'unseen', pinned: true, color: 'charts.red', animated: true }, 'dark')).toBe('unseen-pinned-red-anim-dark.svg');
-    expect(iconName({ kind: 'working', pinned: false, color: 'charts.blue', animated: true }, 'dark')).toBe('working-blue-anim-dark.svg');
-    expect(iconName({ kind: 'active', pinned: true, color: 'charts.blue', animated: true }, 'dark')).toBe('active-pinned-blue-anim-dark.svg');
+    expect(iconName({ kind: 'unseen', pinned: true, color: 'charts.red' }, 'dark')).toBe('unseen-pinned-red-dark.svg');
   });
 
   it('draws the running icon as a closed box with the >_ prompt', () => {
@@ -74,21 +72,28 @@ describe('session icons', () => {
 
   it('animates the unseen twin in a loop: the cursor blinks and the dot pulses', () => {
     const svg = iconSvg({ kind: 'unseen', pinned: false, animated: true }, 'light');
-    expect(svg).toContain('<animate attributeName="opacity" values="1;0" keyTimes="0;0.5" dur="1s" calcMode="discrete" repeatCount="indefinite"/>');
+    expect(svg).toContain('<animate attributeName="opacity" values="0;1" keyTimes="0;0.3333" dur="1.2s" calcMode="discrete" repeatCount="indefinite"/>');
     expect(svg).toContain('<animate attributeName="fill" values="#E51400;#FF9B9B;#E51400" keyTimes="0;0.5;1" dur="1.2s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" repeatCount="indefinite"/>');
   });
 
   it('pulses the cursor of the running twin softly, and keeps the running icon still', () => {
     const svg = iconSvg({ kind: 'active', pinned: false, animated: true }, 'light');
-    expect(svg).toContain('<path d="M7.75 10h4.5"><animate attributeName="opacity" values="1;0.25;1" keyTimes="0;0.5;1" dur="1.4s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" repeatCount="indefinite"/></path>');
+    expect(svg).toContain('<path d="M7.75 10h4.5"><animate attributeName="opacity" values="0.25;1;1;0.25" keyTimes="0;0.3333;0.6667;1" dur="1.2s" calcMode="spline" keySplines="0.4 0 0.6 1;0 0 1 1;0.4 0 0.6 1" repeatCount="indefinite"/></path>');
     expect(iconSvg({ kind: 'active', pinned: false }, 'light')).not.toContain('<animate');
   });
 
-  it('has one icon per spec and theme, 96 still and 72 animated', () => {
+  it('starts every animation that far into the beat when given a phase', () => {
+    const svg = iconSvg({ kind: 'unseen', pinned: false, animated: true }, 'dark', 0.37);
+    expect(svg.match(/<animate /g)).toHaveLength(2);
+    expect(svg.match(/<animate begin="-0.37s" /g)).toHaveLength(2);
+    expect(iconSvg({ kind: 'unseen', pinned: false, animated: true }, 'dark')).not.toContain('begin=');
+  });
+
+  it('has one still icon per spec and theme', () => {
     const icons = allIcons();
-    expect(icons).toHaveLength(168);
-    expect(new Set(icons.map(i => i.name)).size).toBe(168);
-    expect(icons.filter(i => i.name.includes('-anim-'))).toHaveLength(72);
+    expect(icons).toHaveLength(96);
+    expect(new Set(icons.map(i => i.name)).size).toBe(96);
+    expect(icons.every(i => !i.svg.includes('<animate'))).toBe(true);
   });
 
   // UPDATE_ICONS=1 npm test rewrites media/icons after a drawing change.
