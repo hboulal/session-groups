@@ -63,11 +63,13 @@ describe('session icons', () => {
     const svg = iconSvg({ kind: 'working', pinned: false, animated: true }, 'dark');
     expect(svg).not.toContain('h4.5');
     const times = '0.0000;0.0833;0.1667;0.2500;0.3333;0.4167;0.5000;0.5833;0.6667;0.7500;0.8333;0.9167';
-    expect(svg).toContain(`<path d="M8.2 6.2h3.6M10 6.2v3.6" opacity="0"><animate attributeName="opacity" values="0.6;0;0;0;0;0.6;0;0;0.6;0;0;0" keyTimes="${times}" dur="1.2s" calcMode="discrete" repeatCount="indefinite"/></path>`);
+    expect(svg).toContain(`<path d="M8.2 6.2h3.6M10 6.2v3.6" opacity="0"><animate attributeName="opacity" values="1;0;0;0;0;1;0;0;1;0;0;0" keyTimes="${times}" dur="1.2s" calcMode="discrete" repeatCount="indefinite"/></path>`);
     // In every twelfth of the beat exactly one glyph shows, and never the same one twice running, the loop's turn included.
     const shown = [...svg.matchAll(/values="([0-9.;]+)" keyTimes="0\.0000;0\.0833/g)].map(m => m[1]!.split(';'));
     expect(shown).toHaveLength(4);
-    const order = shown[0]!.map((_, slot) => shown.map(v => v[slot]).filter(v => v === '0.6').length === 1 ? shown.findIndex(v => v[slot] === '0.6') : -1);
+    // The glyphs fade together with the running cursor's pulse.
+    expect(svg).toContain('<g><animate attributeName="opacity" values="1;0.25;1" keyTimes="0;0.5;1" dur="1.2s"');
+    const order = shown[0]!.map((_, slot) => shown.map(v => v[slot]).filter(v => v === '1').length === 1 ? shown.findIndex(v => v[slot] === '1') : -1);
     expect(order).not.toContain(-1);
     order.forEach((glyph, slot) => expect(glyph).not.toBe(order[(slot + 1) % order.length]));
     expect(iconSvg({ kind: 'idle', pinned: false, animated: true }, 'dark')).not.toContain('<animate');

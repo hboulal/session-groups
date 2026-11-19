@@ -36,11 +36,11 @@ const SQUARE = 'x="0" y="12" width="4" height="4" rx="0.9"';
 
 // All loop in time with one beat of 1.2 s; drawn with the clock's place in the beat as `phase`, every row moves in time with the others.
 // Running: the cursor fades slowly to a quarter opacity and back, once a beat. Unseen: the cursor blinks fast, on and off twice a beat, and the dot pulses to a pale red and back.
-// Working: no cursor; a glyph at 0.6 opacity in each twelfth of the beat, in an order that never shows the same one twice running.
+// Working: no cursor; a glyph in each twelfth of the beat, in an order that never shows the same one twice running, and the glyphs fade with the running cursor's pulse.
 export const BEAT = 1.2;
 const ORDER = [0, 1, 2, 3, 1, 0, 3, 2, 0, 2, 1, 3];
 const SLOTS = ORDER.map((_, i) => (i / ORDER.length).toFixed(4)).join(';');
-const scramble = (d: string, glyph: number) => `<path d="${d}" opacity="0"><animate attributeName="opacity" values="${ORDER.map(o => o === glyph ? '0.6' : '0').join(';')}" keyTimes="${SLOTS}" dur="${BEAT}s" calcMode="discrete" repeatCount="indefinite"/></path>`;
+const scramble = (d: string, glyph: number) => `<path d="${d}" opacity="0"><animate attributeName="opacity" values="${ORDER.map(o => o === glyph ? '1' : '0').join(';')}" keyTimes="${SLOTS}" dur="${BEAT}s" calcMode="discrete" repeatCount="indefinite"/></path>`;
 const PULSE = `<animate attributeName="opacity" values="1;0.25;1" keyTimes="0;0.5;1" dur="${BEAT}s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" repeatCount="indefinite"/>`;
 const BLINK = `<animate attributeName="opacity" values="1;0" keyTimes="0;0.5" dur="${BEAT / 2}s" calcMode="discrete" repeatCount="indefinite"/>`;
 const brighten = (theme: IconTheme) => `<animate attributeName="fill" values="${UNSEEN_DOT[theme]};${UNSEEN_DOT_BRIGHT[theme]};${UNSEEN_DOT[theme]}" keyTimes="0;0.5;1" dur="${BEAT}s" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" repeatCount="indefinite"/>`;
@@ -67,7 +67,7 @@ export function iconSvg(spec: IconSpec, theme: IconTheme, phase = 0): string {
   const running = spec.kind !== 'idle';
   const box = spec.pinned && running ? el('rect', `${BOX} ${filled(GOLD[theme])}`) : el('rect', BOX);
   const slot = spec.kind === 'working'
-    ? (animated ? GLYPHS.map(scramble).join('') : '')
+    ? (animated ? `<g>${PULSE}${GLYPHS.map(scramble).join('')}</g>` : '')
     : el('path', `d="${CURSOR}"`, animated ? (spec.kind === 'unseen' ? BLINK : PULSE) : '');
   const prompt = running ? el('path', CHEVRON) + slot : '';
   const dot = spec.kind === 'unseen'
